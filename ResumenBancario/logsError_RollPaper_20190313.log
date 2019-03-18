@@ -1,0 +1,16 @@
+06:18:25:281 
+[Ljava.lang.StackTraceElement;@52d4c702
+06:51:09:550 
+[Ljava.lang.StackTraceElement;@50ac5e1f
+13:48:42:991 worker: Procesando... hilo: WORKER -Procesando... - TERMINO ERROR
+[Ljava.lang.StackTraceElement;@58f2c9a1
+13:48:45:848 worker: Procesando... hilo: WORKER -Procesando... - TERMINO ERROR
+[Ljava.lang.StackTraceElement;@1e514482
+13:54:59:621 worker: Procesando... hilo: WORKER -Procesando... - TERMINO ERROR
+[Ljava.lang.StackTraceElement;@71dc4792
+13:55:49:445 worker: Procesando... hilo: WORKER -Procesando... - TERMINO ERROR
+[Ljava.lang.StackTraceElement;@23fbabf8
+13:55:58:683 worker: Procesando... hilo: WORKER -Procesando... - TERMINO ERROR
+[Ljava.lang.StackTraceElement;@447d18c0
+14:14:12:175 
+[Ljava.lang.StackTraceElement;@1b384c4e
