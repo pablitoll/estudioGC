@@ -1,4 +1,4 @@
-package ar.com.tool.rb.ui;
+package ar.com.tnba.utils.besumenesbancarios.ui;
 
 import java.awt.Component;
 import java.io.File;
@@ -12,12 +12,11 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
-import ar.com.smsv.csc.cliente.ui.BarraDeProgreso;
-import ar.com.tool.rb.business.ArchivoDePropiedadesBusiness;
-import ar.com.tool.rb.business.BancosBusiness;
-import ar.com.tool.rb.business.BancosBusiness.Bancos;
-import ar.com.tool.rb.workers.ArchivoProcesar;
-import ar.com.tool.rb.workers.WorkerBarraDeProgresoProcesar;
+import ar.com.tnba.utils.besumenesbancarios.business.ArchivoDePropiedadesBusiness;
+import ar.com.tnba.utils.besumenesbancarios.business.BancosBusiness;
+import ar.com.tnba.utils.besumenesbancarios.business.BancosBusiness.Bancos;
+import ar.com.tnba.utils.besumenesbancarios.workers.ArchivoProcesar;
+import ar.com.tnba.utils.besumenesbancarios.workers.WorkerBarraDeProgresoProcesar;
 
 public class PantallaPrincipalControlador {
 	/*

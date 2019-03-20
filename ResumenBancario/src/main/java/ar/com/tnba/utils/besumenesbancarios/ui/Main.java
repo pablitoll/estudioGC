@@ -1,12 +1,12 @@
-package ar.com.tool.rb.ui;
+package ar.com.tnba.utils.besumenesbancarios.ui;
 
 import java.awt.EventQueue;
 
 import javax.swing.JOptionPane;
 
 import ar.com.rp.ui.main.MainFramework;
-import ar.com.tool.rb.business.ArchivoDePropiedadesBusiness;
-import ar.com.tool.rb.business.LogBusiness;
+import ar.com.tnba.utils.besumenesbancarios.business.ArchivoDePropiedadesBusiness;
+import ar.com.tnba.utils.besumenesbancarios.business.LogBusiness;
 
 public class Main extends MainFramework {
 	/**

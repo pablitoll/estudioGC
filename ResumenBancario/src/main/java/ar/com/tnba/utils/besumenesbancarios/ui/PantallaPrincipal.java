@@ -1,4 +1,4 @@
-package ar.com.tool.rb.ui;
+package ar.com.tnba.utils.besumenesbancarios.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -21,7 +21,7 @@ import com.alee.laf.scroll.WebScrollPane;
 import ar.com.rp.rpcutils.CommonUtils;
 import ar.com.rp.ui.common.Common;
 import ar.com.rp.ui.componentes.JButtonRP;
-import ar.com.tool.rb.business.ConstantesTool;
+import ar.com.tnba.utils.besumenesbancarios.business.ConstantesTool;
 
 public class PantallaPrincipal extends JFrame {
 

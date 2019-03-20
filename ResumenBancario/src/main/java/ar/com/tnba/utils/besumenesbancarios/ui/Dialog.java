@@ -1,4 +1,4 @@
-package ar.com.tool.rb.ui;
+package ar.com.tnba.utils.besumenesbancarios.ui;
 
 import java.awt.Image;
 
@@ -6,7 +6,7 @@ import javax.swing.Icon;
 
 import ar.com.rp.rpcutils.CommonUtils;
 import ar.com.rp.ui.pantalla.DialogMessage;
-import ar.com.tool.rb.business.ConstantesTool;
+import ar.com.tnba.utils.besumenesbancarios.business.ConstantesTool;
 
 public class Dialog {
 

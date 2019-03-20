@@ -1,8 +1,8 @@
-package ar.com.tool.rb.workers;
+package ar.com.tnba.utils.besumenesbancarios.workers;
 
 import java.util.List;
 
-import ar.com.smsv.csc.cliente.ui.BarraDeProgreso;
+import ar.com.tnba.utils.besumenesbancarios.ui.BarraDeProgreso;
 
 public class WorkerBarraDeProgresoProcesar extends WorkerBarraDeProgresoBase {
 

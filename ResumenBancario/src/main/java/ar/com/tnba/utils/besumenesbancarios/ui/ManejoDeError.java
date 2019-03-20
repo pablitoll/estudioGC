@@ -1,10 +1,10 @@
-package ar.com.tool.rb.ui;
+package ar.com.tnba.utils.besumenesbancarios.ui;
 
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import ar.com.rp.ui.error.ErrorManager;
-import ar.com.tool.rb.business.LogBusiness;
+import ar.com.tnba.utils.besumenesbancarios.business.LogBusiness;
 
 public class ManejoDeError {
 

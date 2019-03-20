@@ -1,4 +1,4 @@
-package ar.com.tool.rb.ui;
+package ar.com.tnba.utils.besumenesbancarios.ui;
 
 import java.awt.Color;
 import java.awt.Container;
@@ -15,7 +15,7 @@ import javax.swing.Timer;
 import com.alee.extended.image.DisplayType;
 import com.alee.extended.image.WebImage;
 
-import ar.com.tool.rb.business.ArchivoDePropiedadesBusiness;
+import ar.com.tnba.utils.besumenesbancarios.business.ArchivoDePropiedadesBusiness;
 
 public class SplashScreen extends JWindow {
 

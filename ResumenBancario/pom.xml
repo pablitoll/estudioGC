@@ -7,7 +7,7 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<build>
 		<plugins>
-			 <plugin>
+			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
 				<version>3.1.0</version>
 				<executions>
@@ -48,8 +48,8 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin> 
-		 	<plugin>
+			</plugin>
+			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.6.1</version>
 				<configuration>
@@ -87,15 +87,12 @@
 			<artifactId>mssql-jdbc</artifactId>
 			<version>6.1.0.jre8</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/de.sciss/weblaf -->
-		<!-- https://mvnrepository.com/artifact/de.sciss/weblaf -->
 		<dependency>
 			<groupId>de.sciss</groupId>
 			<artifactId>weblaf</artifactId>
 			<version>1.28</version>
 			<type>pom</type>
 			<scope>test</scope>
-			<!-- https://mvnrepository.com/artifact/de.sciss/weblaf-ui -->
 		</dependency>
 		<dependency>
 			<groupId>de.sciss</groupId>
@@ -112,12 +109,20 @@
 			<artifactId>RPCUtils</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
-		<!-- <dependency> <groupId>net.sf.jasperreports</groupId> <artifactId>jasperreports</artifactId> 
-			<version>3.6.0</version> </dependency> -->
-		<!-- https://mvnrepository.com/artifact/jasperreports/jasperreports -->
-		<!-- https://mvnrepository.com/artifact/net.sf.jasperreports/jasperreports -->
-
-
-
+		<dependency>
+			<groupId>org.apache.pdfbox</groupId>
+			<artifactId>pdfbox</artifactId>
+			<version>2.0.13</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-csv</artifactId>
+			<version>2.9.7</version>
+		</dependency>
+		<dependency>
+			<groupId>net.sourceforge.tess4j</groupId>
+			<artifactId>tess4j</artifactId>
+			<version>4.3.0</version>
+		</dependency>
 	</dependencies>
 </project>
