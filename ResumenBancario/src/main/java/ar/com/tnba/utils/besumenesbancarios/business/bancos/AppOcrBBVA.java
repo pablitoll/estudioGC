@@ -29,24 +29,7 @@ public class AppOcrBBVA {
 		List<File> ficheros = (List<File>) FileUtils.listFiles(dir, extensions, true);
 		// int i = 0;
 		for (final File archivo : ficheros) {
-
-			// if (i < 5) {
-			// i++;
-			// new Runnable() {
-			// public void run() {
 			procesarArchivo(instance, archivo);
-			// }
-			// };
-			// } else {
-			// try {
-			// Thread.sleep(30000);
-			// } catch (InterruptedException e) {
-			// // TODO Auto-generated catch block
-			// e.printStackTrace();
-			// }
-			// i = 0;
-			// }
-
 		}
 
 	}
@@ -54,8 +37,9 @@ public class AppOcrBBVA {
 	/**
 	 * @param instance
 	 * @param archivo
+	 * @throws Exception 
 	 */
-	private static void procesarArchivo(ITesseract instance, File archivo) {
+	public static void procesarArchivo(ITesseract instance, File archivo) throws Exception {
 		try {
 			System.out.println("Procesando: " + archivo.getName());
 			String result = instance.doOCR(archivo);
@@ -132,13 +116,15 @@ public class AppOcrBBVA {
 			// parts[i] = parts[i].replaceFirst(" ", ";");
 			// }
 			System.out.println(result1);
-
-			Files.write(Paths.get("C:\\Users\\pmv1283\\Desktop\\ESTUDIOGC\\resumenesBBVA\\" + archivo.getName() + ".csv"), result1.getBytes(), StandardOpenOption.CREATE,
-					StandardOpenOption.APPEND);
+			Files.write(Paths.get(archivo.getName() + ".csv"), result1.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+			// Files.write(Paths.get("C:\\Users\\pmv1283\\Desktop\\ESTUDIOGC\\resumenesBBVA\\"
+			// + archivo.getName() + ".csv"), result1.getBytes(), StandardOpenOption.CREATE,
+			// StandardOpenOption.APPEND);
 
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.err.println(e.getMessage());
+			throw (e);
 		}
 	}
 }

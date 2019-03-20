@@ -47,7 +47,7 @@ public class PantallaPrincipalControlador {
 		}
 	}
 
-	private static void cargaHijos(DefaultMutableTreeNode padre, String directorioDeTrabajo) {
+	private static void cargaHijos(DefaultMutableTreeNode padre, String directorioDeTrabajo, Bancos banco) {
 		File rootFile = new File(directorioDeTrabajo);
 		File[] listaFile = rootFile.listFiles();
 
@@ -59,7 +59,10 @@ public class PantallaPrincipalControlador {
 			if (f.isFile()) {
 				String nombreArchivo = f.getName();
 				if (nombreArchivo.substring(nombreArchivo.lastIndexOf(".")).equalsIgnoreCase(".pdf")) {
-					DefaultMutableTreeNode hijo = new DefaultMutableTreeNode(nombreArchivo);
+
+					ArchivoProcesar hijoTree = new ArchivoProcesar(banco, nombreArchivo, f);
+
+					DefaultMutableTreeNode hijo = new DefaultMutableTreeNode(hijoTree);
 					padre.add(hijo);
 				}
 			}
@@ -76,8 +79,7 @@ public class PantallaPrincipalControlador {
 
 			for (int i = 0; i < rootTree.getChildCount(); i++) {
 				DefaultMutableTreeNode nodo = (DefaultMutableTreeNode) rootTree.getChildAt(i);
-				Bancos banco = BancosBusiness.darBancoByNombre(nodo.toString());
-				agregarNodoALista(listaArchivoProcesar, nodo, banco);
+				agregarNodoALista(listaArchivoProcesar, nodo);
 			}
 
 			if (listaArchivoProcesar.size() > 0) {
@@ -92,10 +94,11 @@ public class PantallaPrincipalControlador {
 		}
 	}
 
-	private static void agregarNodoALista(List<ArchivoProcesar> listaArchivoProcesar, DefaultMutableTreeNode nodoPadre, Bancos banco) {
+	private static void agregarNodoALista(List<ArchivoProcesar> listaArchivoProcesar, DefaultMutableTreeNode nodoPadre) {
 		for (int i = 0; i < nodoPadre.getChildCount(); i++) {
-			DefaultMutableTreeNode hijo = (DefaultMutableTreeNode) nodoPadre.getChildAt(i);
-			listaArchivoProcesar.add(new ArchivoProcesar(banco, hijo.toString()));
+			DefaultMutableTreeNode nodo = (DefaultMutableTreeNode) nodoPadre.getChildAt(i);
+			ArchivoProcesar hijo = (ArchivoProcesar) nodo.getUserObject();
+			listaArchivoProcesar.add(hijo);
 		}
 
 	}
@@ -125,7 +128,7 @@ public class PantallaPrincipalControlador {
 					Bancos banco = BancosBusiness.darBancoByDirectorio(f.getName());
 					if (banco != null) {
 						DefaultMutableTreeNode padre = new DefaultMutableTreeNode(banco.getNombre());
-						cargaHijos(padre, f.getAbsolutePath());
+						cargaHijos(padre, f.getAbsolutePath(), banco);
 						rootTree.add(padre);
 					}
 				}
@@ -134,10 +137,10 @@ public class PantallaPrincipalControlador {
 		recargarModelo(tree);
 	}
 
-	private static void recargarModelo(JTree tree) {	
+	private static void recargarModelo(JTree tree) {
 		DefaultTreeModel modelTree = (DefaultTreeModel) tree.getModel();
 		DefaultMutableTreeNode rootTree = (DefaultMutableTreeNode) modelTree.getRoot();
-		
+
 		modelTree.reload(rootTree);
 		expandAllNodes(tree, 0, tree.getRowCount());
 	}
