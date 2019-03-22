@@ -129,7 +129,7 @@ public class PantallaPrincipal extends JFrame {
 		btnCrearDirectorios.setFont(Common.getStandarFont(10));
 
 		tree = new JTree(new DefaultMutableTreeNode("Archivos a Procesar"));
-	
+
 		WebScrollPane scrollPane = new WebScrollPane(tree);
 		getContentPane().add(scrollPane, BorderLayout.CENTER);
 
@@ -137,7 +137,6 @@ public class PantallaPrincipal extends JFrame {
 
 	protected void crearEstructura() {
 		PantallaPrincipalControlador.crearEstructura(txtDescArticulo, tree);
-
 	}
 
 	protected void recargar() {
@@ -146,7 +145,6 @@ public class PantallaPrincipal extends JFrame {
 
 	private void perdioFoco() {
 		PantallaPrincipalControlador.cargarDirecorio(txtDescArticulo, tree);
-
 	}
 
 	private void seleccionar() {

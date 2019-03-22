@@ -15,6 +15,7 @@ import javax.swing.tree.DefaultTreeModel;
 import ar.com.tnba.utils.besumenesbancarios.business.ArchivoDePropiedadesBusiness;
 import ar.com.tnba.utils.besumenesbancarios.business.BancosBusiness;
 import ar.com.tnba.utils.besumenesbancarios.business.BancosBusiness.Bancos;
+import ar.com.tnba.utils.besumenesbancarios.business.LogManager;
 import ar.com.tnba.utils.besumenesbancarios.workers.ArchivoProcesar;
 import ar.com.tnba.utils.besumenesbancarios.workers.WorkerBarraDeProgresoProcesar;
 
@@ -107,14 +108,28 @@ public class PantallaPrincipalControlador {
 		try {
 			txtDescArticulo.setText(ArchivoDePropiedadesBusiness.getDirectorioDeTrabajo());
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			try {
+				LogManager.getLogManager().logError(e);
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
 		}
 		cargarDirecorio(txtDescArticulo, tree);
 
 	}
 
 	public static void cargarDirecorio(JTextField txtDescArticulo, JTree tree) {
+		try {
+			ArchivoDePropiedadesBusiness.setDirectorioDeTrabajo(txtDescArticulo.getText());
+		} catch (Exception e) {
+			try {
+				LogManager.getLogManager().logError(e);
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+		}
+
 		DefaultTreeModel modelTree = (DefaultTreeModel) tree.getModel();
 		DefaultMutableTreeNode rootTree = (DefaultMutableTreeNode) modelTree.getRoot();
 		rootTree.removeAllChildren();

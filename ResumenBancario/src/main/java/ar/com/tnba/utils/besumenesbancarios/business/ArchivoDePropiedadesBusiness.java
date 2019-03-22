@@ -21,10 +21,14 @@ public class ArchivoDePropiedadesBusiness {
 
 	public enum propiedades {
 		directorioDeTrabajo
-	};
+	}
 
 	public static String getDirectorioDeTrabajo() throws Exception {
 		return getPropiedades().getPropiedad(propiedades.directorioDeTrabajo, "C:\\rg");
+	}
+
+	public static void setDirectorioDeTrabajo(String path) throws Exception {
+		getPropiedades().setProperty(propiedades.directorioDeTrabajo, path);
 	}
 
 	private static ArchivoPropiedades<propiedades> getPropiedades() throws Exception {

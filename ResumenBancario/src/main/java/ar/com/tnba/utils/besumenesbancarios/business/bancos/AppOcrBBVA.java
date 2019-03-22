@@ -37,9 +37,9 @@ public class AppOcrBBVA {
 	/**
 	 * @param instance
 	 * @param archivo
-	 * @throws Exception 
+	 * @throws Exception
 	 */
-	public static void procesarArchivo(ITesseract instance, File archivo) throws Exception {
+	public static String procesarArchivo(ITesseract instance, File archivo) throws Exception {
 		try {
 			System.out.println("Procesando: " + archivo.getName());
 			String result = instance.doOCR(archivo);
@@ -116,14 +116,13 @@ public class AppOcrBBVA {
 			// parts[i] = parts[i].replaceFirst(" ", ";");
 			// }
 			System.out.println(result1);
-			Files.write(Paths.get(archivo.getName() + ".csv"), result1.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+			return result1;
 			// Files.write(Paths.get("C:\\Users\\pmv1283\\Desktop\\ESTUDIOGC\\resumenesBBVA\\"
 			// + archivo.getName() + ".csv"), result1.getBytes(), StandardOpenOption.CREATE,
 			// StandardOpenOption.APPEND);
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			System.err.println(e.getMessage());
 			throw (e);
 		}
 	}
