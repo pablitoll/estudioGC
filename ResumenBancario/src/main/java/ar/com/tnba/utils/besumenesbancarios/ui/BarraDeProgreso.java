@@ -142,15 +142,15 @@ public class BarraDeProgreso extends JDialog {
 		estadoInterno = estado;
 		// primero muestro los carteles
 		if (estado == estados.CANCEL) {
-			lblLeyenda.setText("Se cancelo el proceso. Se preocesaron " + progressBar.getValue() + " registros.");
+			lblLeyenda.setText("Se cancelo el proceso.");
 		}
 
 		if (estado == estados.OK) {
-			lblLeyenda.setText("Termino el procesamiento. Total " + progressBar.getMaximum() + " registros.");
+			lblLeyenda.setText("Termino el procesamiento.");
 		}
 
 		if (estado == estados.ERROR) {
-			lblLeyenda.setText("Termino con error. Se procesaron " + progressBar.getValue() + " registros.");
+			lblLeyenda.setText("Termino con error.");
 		}
 
 		// hago el seteo
@@ -195,13 +195,13 @@ public class BarraDeProgreso extends JDialog {
 
 	public void setMax(Integer max) {
 		progressBar.setMaximum(max + progressBar.getMaximum());
-		lblLeyenda.setText("Procesando... (" + 0 + " de " + progressBar.getMaximum() + ")");
+		lblLeyenda.setText("Procesando...");
 	}
 
 	public void procesado(Integer procesados) {
 		int nuevoProcesado = procesados + progressBar.getValue();
 		progressBar.setValue(nuevoProcesado);
-		lblLeyenda.setText("Procesando... (" + nuevoProcesado + " de " + progressBar.getMaximum() + ")");
+		lblLeyenda.setText("Procesando...");
 	}
 
 	public void setMensaje(String msg) {

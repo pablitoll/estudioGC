@@ -1,4 +1,4 @@
-package ar.com.tnba.utils.besumenesbancarios.workers;
+package ar.com.tnba.utils.besumenesbancarios.dto;
 
 import java.io.File;
 

@@ -8,9 +8,11 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
-import ar.com.rp.rpcutils.CommonUtils;
 import ar.com.tnba.utils.besumenesbancarios.business.BancosBusiness.Bancos;
+import ar.com.tnba.utils.besumenesbancarios.business.CommonResumenBancario;
+import ar.com.tnba.utils.besumenesbancarios.business.LogManager;
 import ar.com.tnba.utils.besumenesbancarios.business.bancos.AppOcrBBVA;
+import ar.com.tnba.utils.besumenesbancarios.dto.ArchivoProcesar;
 import net.sourceforge.lept4j.util.LoadLibs;
 import net.sourceforge.tess4j.ITesseract;
 import net.sourceforge.tess4j.Tesseract1;
@@ -60,7 +62,12 @@ public class Hilo extends Thread {
 			} catch (Exception e) {
 				e.printStackTrace();
 				try {
-					FileWriter write = new FileWriter(archivoProcesar.getArchivo().getPath() + ".Hoja " + getHoja(nroHoja) + ".ERROR", true);
+					LogManager.getLogManager().logError(e);
+				} catch (Exception e2) {
+					e2.printStackTrace();
+				}
+				try {
+					FileWriter write = new FileWriter(archivoProcesar.getArchivo().getPath() + ".Hoja " + CommonResumenBancario.getNroHoja(nroHoja) + ".ERROR", true);
 					PrintWriter pw = new PrintWriter(write);
 					pw.println(e.getStackTrace().toString());
 					pw.close();
@@ -70,19 +77,20 @@ public class Hilo extends Thread {
 			}
 			if (!datosCSV.equals("")) {
 				try {
-					Files.write(Paths.get(archivoProcesar.getArchivo().getPath() + ".Hoja " + getHoja(nroHoja) + ".csv"), datosCSV.getBytes(), StandardOpenOption.CREATE,
+					Files.write(Paths.get(archivoProcesar.getArchivo().getPath() + ".Hoja " + CommonResumenBancario.getNroHoja(nroHoja) + ".csv"), datosCSV.getBytes(), StandardOpenOption.CREATE,
 							StandardOpenOption.APPEND);
 				} catch (IOException e) {
 					e.printStackTrace();
+					try {
+						LogManager.getLogManager().logError(e);
+					} catch (Exception e2) {
+						e2.printStackTrace();
+					}
 				}
 			}
 		} finally {
 			callBack.terminoHilo(chunk);
 		}
-	}
-
-	private String getHoja(int nroHoja) {
-		return CommonUtils.strRigth("00000" + String.valueOf(nroHoja).trim(), 3);
 	}
 
 	private ITesseract getInstanceNacion() {

@@ -20,7 +20,7 @@ public class ConvertPDFtoTIFF {
 		PDFRenderer pdfRenderer = new PDFRenderer(document);
 		for (int page = 0; page < document.getNumberOfPages(); ++page) {
 			BufferedImage bim = pdfRenderer.renderImageWithDPI(page, 300, ImageType.GRAY);
-			String filename = Paths.get(PDFfile.getPath()).getParent().toString() + "\\" + PDFfile.getName() + "-" + (page + 1) + ".tif";
+			String filename = Paths.get(PDFfile.getPath()).getParent().toString() + "\\" + PDFfile.getName() + "-" + CommonResumenBancario.getNroHoja(page + 1) + ".tif";
 			ImageIOUtil.writeImage(bim, filename, 300);
 			listaFiles.add(new File(filename));
 		}

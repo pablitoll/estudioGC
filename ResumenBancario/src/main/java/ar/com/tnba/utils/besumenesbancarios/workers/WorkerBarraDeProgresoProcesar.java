@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ar.com.tnba.utils.besumenesbancarios.business.ConvertPDFtoTIFF;
+import ar.com.tnba.utils.besumenesbancarios.dto.ArchivoProcesar;
 import ar.com.tnba.utils.besumenesbancarios.ui.BarraDeProgreso;
 
 public class WorkerBarraDeProgresoProcesar extends WorkerBarraDeProgresoBase implements CallBackWorker {

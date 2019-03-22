@@ -47,7 +47,7 @@ public class LogBusiness {
 		setCsc_session_id(UUID.randomUUID().toString());
 
 		String path =  System.getProperty("user.dir") + "//logs";
-		_LogManager = new LogManager(path, "RollPaper");
+		_LogManager = new LogManager(path, "ResumenBancario");
 	}
 
 	public static String getCsc_session_id() {
