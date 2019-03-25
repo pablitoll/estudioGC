@@ -4,6 +4,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
+
 import ar.com.tnba.utils.besumenesbancarios.business.ConvertPDFtoTIFF;
 import ar.com.tnba.utils.besumenesbancarios.dto.ArchivoProcesar;
 import ar.com.tnba.utils.besumenesbancarios.ui.BarraDeProgreso;
@@ -29,9 +31,13 @@ public class WorkerBarraDeProgresoProcesar extends WorkerBarraDeProgresoBase imp
 		while ((i < listaArchivoProcesar.size()) && !cancelar) {
 			ArchivoProcesar archivoProcesar = listaArchivoProcesar.get(i);
 
-			pantalla.setTitle(archivoProcesar.getBanco().getNombre() + " - " + archivoProcesar.getNombreArchivo() + " - OCR");
+			pantalla.setTitle(archivoProcesar.getBanco().getNombre() + " - " + archivoProcesar.getNombreArchivo() + " - Generando Imagenes");
 
-			List<File> listaARchivoOCR = ConvertPDFtoTIFF.convert(archivoProcesar.getArchivo());
+			File directorioDestino = new File(archivoProcesar.getArchivo().getPath().substring(0,archivoProcesar.getArchivo().getPath().length() - 4));
+			FileUtils.deleteDirectory(directorioDestino);
+			directorioDestino.mkdir();
+			
+			List<File> listaARchivoOCR = ConvertPDFtoTIFF.convert(archivoProcesar.getArchivo(), directorioDestino);
 			Integer nroHoja = 1;
 			Integer chunk = SIZE_SLOT_CHUNK / (listaARchivoOCR.size() + 1);
 
@@ -40,10 +46,8 @@ public class WorkerBarraDeProgresoProcesar extends WorkerBarraDeProgresoBase imp
 
 				if (hayHiloLibre()) {
 					File archivoOCR = listaARchivoOCR.get(nroHoja - 1);
-					pantalla.setTitle(String.format("%s -  %s - Hoja Terminada %s / %s", archivoProcesar.getBanco().getNombre(), archivoProcesar.getNombreArchivo(), nroHoja - 1,
-							listaARchivoOCR.size()));
-
-					Hilo hiloLibre = new Hilo(archivoOCR, nroHoja, archivoProcesar, this, chunk);
+					pantalla.setTitle(String.format("%s - %s - %s Hojas", archivoProcesar.getBanco().getNombre(), archivoProcesar.getNombreArchivo(), listaARchivoOCR.size()));
+					Hilo hiloLibre = new Hilo(archivoOCR, nroHoja, archivoProcesar, this, chunk, directorioDestino);
 
 					listaHilos.add(hiloLibre);
 					hiloLibre.start();

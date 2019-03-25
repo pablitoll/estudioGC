@@ -24,14 +24,16 @@ public class Hilo extends Thread {
 	private ArchivoProcesar archivoProcesar;
 	private CallBackWorker callBack;
 	private Integer chunk;
+	private File directorioDestino;
 
-	public Hilo(File archivoOCR, int nroHoja, ArchivoProcesar archivoProcesar, CallBackWorker callBack, Integer chunk) {
+	public Hilo(File archivoOCR, int nroHoja, ArchivoProcesar archivoProcesar, CallBackWorker callBack, Integer chunk, File directorioDestino) {
 		super();
 		this.archivoOCR = archivoOCR;
 		this.nroHoja = nroHoja;
 		this.archivoProcesar = archivoProcesar;
 		this.callBack = callBack;
 		this.chunk = chunk;
+		this.directorioDestino = directorioDestino;
 	}
 
 	public File getArchivoOCR() {
@@ -67,7 +69,8 @@ public class Hilo extends Thread {
 					e2.printStackTrace();
 				}
 				try {
-					FileWriter write = new FileWriter(archivoProcesar.getArchivo().getPath() + ".Hoja " + CommonResumenBancario.getNroHoja(nroHoja) + ".ERROR", true);
+					FileWriter write = new FileWriter(
+							directorioDestino.getPath() + File.separator + archivoProcesar.getNombreArchivo() + CommonResumenBancario.subFijo(nroHoja) + ".ERROR", true);
 					PrintWriter pw = new PrintWriter(write);
 					pw.println(e.getStackTrace().toString());
 					pw.close();
@@ -77,8 +80,8 @@ public class Hilo extends Thread {
 			}
 			if (!datosCSV.equals("")) {
 				try {
-					Files.write(Paths.get(archivoProcesar.getArchivo().getPath() + ".Hoja " + CommonResumenBancario.getNroHoja(nroHoja) + ".csv"), datosCSV.getBytes(), StandardOpenOption.CREATE,
-							StandardOpenOption.APPEND);
+					Files.write(Paths.get(directorioDestino.getPath() + File.separator + archivoProcesar.getNombreArchivo() + CommonResumenBancario.subFijo(nroHoja) + ".csv"),
+							datosCSV.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 				} catch (IOException e) {
 					e.printStackTrace();
 					try {
@@ -106,7 +109,7 @@ public class Hilo extends Thread {
 		Tesseract1 instanceFrances = new Tesseract1(); // JNA Direct Mapping
 		// instance.setTessVariable("preserve_interword_spaces", "1");
 		// instance.setTessVariable("psm", "6");
-		instanceFrances.setDatapath("C:\\temp\\tessdata"); // path to tessdata directory
+		instanceFrances.setDatapath(directorioDestino.getPath() + File.separator + "temp\\tessdata"); // path to tessdata directory
 		File tessDataFolder = LoadLibs.extractNativeResources("tessdata");
 		instanceFrances.setDatapath(tessDataFolder.getAbsolutePath());
 		return instanceFrances;
