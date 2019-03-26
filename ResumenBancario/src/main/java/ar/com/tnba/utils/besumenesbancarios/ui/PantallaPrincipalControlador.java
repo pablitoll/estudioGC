@@ -13,10 +13,10 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
 import ar.com.tnba.utils.besumenesbancarios.business.ArchivoDePropiedadesBusiness;
-import ar.com.tnba.utils.besumenesbancarios.dto.ArchivoProcesar;
 import ar.com.tnba.utils.besumenesbancarios.business.LogManager;
 import ar.com.tnba.utils.besumenesbancarios.business.bancos.BancosBusiness;
 import ar.com.tnba.utils.besumenesbancarios.business.bancos.BancosBusiness.Bancos;
+import ar.com.tnba.utils.besumenesbancarios.dto.ArchivoProcesar;
 import ar.com.tnba.utils.besumenesbancarios.workers.WorkerBarraDeProgresoProcesar;
 
 public class PantallaPrincipalControlador {
