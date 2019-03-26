@@ -1,5 +1,8 @@
 package ar.com.tnba.utils.besumenesbancarios.business;
 
+import java.io.FileWriter;
+import java.io.PrintWriter;
+
 import ar.com.rp.rpcutils.CommonUtils;
 
 public class CommonResumenBancario {
@@ -9,5 +12,12 @@ public class CommonResumenBancario {
 
 	public static String subFijo(int nroHoja) {
 		return ".Hoja " + getNroHoja(nroHoja);
+	}
+
+	public static void txt2File(String txt, String file) throws Exception {
+		FileWriter write = new FileWriter(file, true);
+		PrintWriter pw = new PrintWriter(write);
+		pw.println(txt);
+		pw.close();
 	}
 }

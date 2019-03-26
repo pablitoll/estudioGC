@@ -22,11 +22,13 @@ public class Hilo extends Thread {
 	private CallBackWorker callBack;
 	private Integer chunk;
 	private File directorioDestino;
+	private int totalDeHojas;
 
-	public Hilo(File archivoOCR, int nroHoja, ArchivoProcesar archivoProcesar, CallBackWorker callBack, Integer chunk, File directorioDestino) {
+	public Hilo(File archivoOCR, int nroHoja, int totalDeHojas, ArchivoProcesar archivoProcesar, CallBackWorker callBack, Integer chunk, File directorioDestino) {
 		super();
 		this.archivoOCR = archivoOCR;
 		this.nroHoja = nroHoja;
+		this.totalDeHojas = totalDeHojas;
 		this.archivoProcesar = archivoProcesar;
 		this.callBack = callBack;
 		this.chunk = chunk;
@@ -45,6 +47,10 @@ public class Hilo extends Thread {
 		return archivoProcesar;
 	}
 
+	public Boolean isUltimo() {
+		return nroHoja == totalDeHojas;
+	}
+
 	@Override
 	public void run() {
 		String datosCSV = "";
@@ -55,7 +61,8 @@ public class Hilo extends Thread {
 				// Obtengo OCR
 				String strOCR = bi.getOCR(archivoOCR);
 				// gravo ocr
-				txt2File(strOCR, directorioDestino.getPath() + File.separator + archivoProcesar.getNombreArchivo() + CommonResumenBancario.subFijo(nroHoja) + ".ocr");
+				CommonResumenBancario.txt2File(strOCR,
+						directorioDestino.getPath() + File.separator + archivoProcesar.getNombreArchivo() + CommonResumenBancario.subFijo(nroHoja) + ".ocr");
 				// obtengo archivo parceado
 				datosCSV = bi.procesarArchivo(strOCR, archivoOCR, nroHoja);
 
@@ -68,7 +75,7 @@ public class Hilo extends Thread {
 					e2.printStackTrace();
 				}
 				try {
-					txt2File(ExceptionUtils.exception2String(e),
+					CommonResumenBancario.txt2File(ExceptionUtils.exception2String(e),
 							directorioDestino.getPath() + File.separator + archivoProcesar.getNombreArchivo() + CommonResumenBancario.subFijo(nroHoja) + ".ERROR");
 				} catch (Exception e1) {
 					e1.printStackTrace();
@@ -89,14 +96,8 @@ public class Hilo extends Thread {
 				}
 			}
 		} finally {
-			callBack.terminoHilo(chunk);
+			callBack.terminoHilo(chunk, this);
 		}
 	}
 
-	private void txt2File(String txt, String file) throws Exception {
-		FileWriter write = new FileWriter(file, true);
-		PrintWriter pw = new PrintWriter(write);
-		pw.println(txt);
-		pw.close();
-	}
 }

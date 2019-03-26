@@ -1,12 +1,19 @@
 package ar.com.tnba.utils.besumenesbancarios.workers;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.tree.DefaultMutableTreeNode;
+
 import org.apache.commons.io.FileUtils;
 
+import ar.com.rp.rpcutils.ExceptionUtils;
 import ar.com.tnba.utils.besumenesbancarios.business.ArchivoDePropiedadesBusiness;
+import ar.com.tnba.utils.besumenesbancarios.business.CommonResumenBancario;
 import ar.com.tnba.utils.besumenesbancarios.business.ConvertPDFtoTIFF;
 import ar.com.tnba.utils.besumenesbancarios.dto.ArchivoProcesar;
 import ar.com.tnba.utils.besumenesbancarios.ui.BarraDeProgreso;
@@ -34,10 +41,10 @@ public class WorkerBarraDeProgresoProcesar extends WorkerBarraDeProgresoBase imp
 
 			pantalla.setTitle(archivoProcesar.getBanco().getNombre() + " - " + archivoProcesar.getNombreArchivo() + " - Generando Imagenes");
 
-			File directorioDestino = new File(archivoProcesar.getArchivo().getPath().substring(0,archivoProcesar.getArchivo().getPath().length() - 4));
+			File directorioDestino = new File(archivoProcesar.getArchivo().getPath().substring(0, archivoProcesar.getArchivo().getPath().length() - 4));
 			FileUtils.deleteDirectory(directorioDestino);
 			directorioDestino.mkdir();
-			
+
 			List<File> listaARchivoOCR = ConvertPDFtoTIFF.convert(archivoProcesar.getArchivo(), directorioDestino);
 			Integer nroHoja = 1;
 			Integer chunk = SIZE_SLOT_CHUNK / (listaARchivoOCR.size() + 1);
@@ -48,7 +55,7 @@ public class WorkerBarraDeProgresoProcesar extends WorkerBarraDeProgresoBase imp
 				if (hayHiloLibre()) {
 					File archivoOCR = listaARchivoOCR.get(nroHoja - 1);
 					pantalla.setTitle(String.format("%s - %s - %s Hojas", archivoProcesar.getBanco().getNombre(), archivoProcesar.getNombreArchivo(), listaARchivoOCR.size()));
-					Hilo hiloLibre = new Hilo(archivoOCR, nroHoja, archivoProcesar, this, chunk, directorioDestino);
+					Hilo hiloLibre = new Hilo(archivoOCR, nroHoja, listaARchivoOCR.size(), archivoProcesar, this, chunk, directorioDestino);
 
 					listaHilos.add(hiloLibre);
 					hiloLibre.start();
@@ -99,7 +106,50 @@ public class WorkerBarraDeProgresoProcesar extends WorkerBarraDeProgresoBase imp
 	}
 
 	@Override
-	public void terminoHilo(Integer chunk) {
+	public void terminoHilo(Integer chunk, Hilo hilo) {
+		if (hilo.isUltimo()) {
+			String nombreArchivoCSV = hilo.getArchivoOCR().getParentFile().toString() + File.separator + hilo.getArchivoProcesar().getNombreArchivo() + ".Completo.csv";
+			try {
+				// Si es el utimo, genero el csv con la union de todos.
+				File rootFile = new File(hilo.getArchivoOCR().getParentFile().toString());
+				File[] listaFile = rootFile.listFiles();
+				boolean entro = false;
+				if ((listaFile == null) || (listaFile.length == 0)) {
+					throw new Exception("No hay archivo csv para generados");
+				}
+
+				PrintWriter pw = new PrintWriter(nombreArchivoCSV);
+				for (File f : listaFile) {
+					if (f.isFile()) {
+						String nombreArchivo = f.getName();
+						if (nombreArchivo.substring(nombreArchivo.lastIndexOf(".")).equalsIgnoreCase(".csv")) {
+							entro = true;
+							BufferedReader br = new BufferedReader(new FileReader(f));
+							String line = br.readLine();
+							while (line != null) {
+								pw.println(line);
+								line = br.readLine();
+							}
+							br.close();
+						}
+					}
+				}
+				pw.flush();
+				pw.close();
+
+				if (!entro) {
+					CommonResumenBancario.txt2File("No hay archivo csv para generados", nombreArchivoCSV + ".ERROR");
+				}
+
+			} catch (Exception e) {
+				e.printStackTrace();
+				try {
+					CommonResumenBancario.txt2File(ExceptionUtils.exception2String(e), nombreArchivoCSV + ".ERROR");
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
+			}
+		}
 		avanzarbBarra(chunk);
 	}
 
