@@ -3,67 +3,131 @@ package ar.com.tnba.utils.besumenesbancarios.business.bancos;
 import java.io.File;
 import java.util.StringJoiner;
 
+import ar.com.tnba.utils.besumenesbancarios.business.CommonResumenBancario;
 import net.sourceforge.lept4j.util.LoadLibs;
 import net.sourceforge.tess4j.ITesseract;
 import net.sourceforge.tess4j.Tesseract1;
 
 public class AppOcrBNA implements BancosInterface {
 
+	private static final String SEP_MILES_BNA = ".";
+	private static final String SEP_DEC_BNA = ",";
+
 	@Override
 	public String procesarArchivo(String strOcr, File archivo, Integer pagina) throws Exception {
 		System.out.println("Procesando Nacion: " + archivo.getName() + " Pagina " + pagina);
-
+		String strOcrFormateado = "";
 		try {
-			String strOcrFormateado = strOcr.substring(strOcr.lastIndexOf("SALDO ANTERIOR"), strOcr.lastIndexOf("SALDO FINAL"));
+			int idxSaldoAnterior = strOcr.lastIndexOf("SALDO ANTERIOR");
+			int idxSaldoFinal = strOcr.lastIndexOf("SALDO FINAL");
+			int idxTransporte = strOcr.lastIndexOf("TRANSPORTE");
 
-			// ALTA NEGRADA
-			strOcrFormateado = strOcrFormateado.replace("                    ", ";");
-			strOcrFormateado = strOcrFormateado.replace("                   ", ";");
-			strOcrFormateado = strOcrFormateado.replace("                  ", ";");
-			strOcrFormateado = strOcrFormateado.replace("                 ", ";");
-			strOcrFormateado = strOcrFormateado.replace("                ", ";");
-			strOcrFormateado = strOcrFormateado.replace("               ", ";");
-			strOcrFormateado = strOcrFormateado.replace("              ", ";");
-			strOcrFormateado = strOcrFormateado.replace("             ", ";");
-			strOcrFormateado = strOcrFormateado.replace("            ", ";");
-			strOcrFormateado = strOcrFormateado.replace("           ", ";");
-			strOcrFormateado = strOcrFormateado.replace("          ", ";");
-			strOcrFormateado = strOcrFormateado.replace("         ", ";");
-			strOcrFormateado = strOcrFormateado.replace("        ", ";");
-			strOcrFormateado = strOcrFormateado.replace("       ", ";");
-			strOcrFormateado = strOcrFormateado.replace("      ", ";");
-			strOcrFormateado = strOcrFormateado.replace("     ", ";");
-			strOcrFormateado = strOcrFormateado.replace("    ", ";");
-			strOcrFormateado = strOcrFormateado.replace("   ", ";");
-			strOcrFormateado = strOcrFormateado.replace("  ", ";");
+			int idxInicio = idxSaldoAnterior;
+			int idxFinal = idxSaldoFinal;
 
-			strOcrFormateado = strOcrFormateado.replace(";;", ";");
-			strOcrFormateado = strOcrFormateado.replace(";;", ";");
-			strOcrFormateado = strOcrFormateado.replace(";;", ";");
-			// result1 = result1.replaceFirst(" ", ";");
-
-			String[] parts = strOcrFormateado.split("\n");
-			for (int i = 0; i < parts.length; i++) {
-				parts[i] = parts[i].replaceFirst(" ", ";");
+			if ((idxSaldoAnterior == -1) && (idxTransporte > -1)) {
+				idxInicio = idxTransporte;
 			}
-			System.out.println(strOcrFormateado);
 
-			String[] parts2 = new String[parts.length - 1];
-			for (int i = 1; i < parts.length; i++) {
-				parts2[i - 1] = parts[i];
+			if ((idxFinal == -1) && (idxTransporte > -1)) {
+				idxFinal = idxTransporte;
 			}
-			StringJoiner sj = new StringJoiner("\n");
-			for (String s : parts2) {
-				sj.add(s);
-			}
-			strOcrFormateado = sj.toString();
 
+			if ((idxInicio > -1) && (idxFinal > -1)) {
+
+				strOcrFormateado = strOcr.substring(idxInicio, idxFinal);
+
+				// ALTA NEGRADA
+				strOcrFormateado = strOcrFormateado.replace("       -Suc", " -Suc");
+				strOcrFormateado = strOcrFormateado.replace("                    ", ";");
+				strOcrFormateado = strOcrFormateado.replace("                   ", ";");
+				strOcrFormateado = strOcrFormateado.replace("                  ", ";");
+				strOcrFormateado = strOcrFormateado.replace("                 ", ";");
+				strOcrFormateado = strOcrFormateado.replace("                ", ";");
+				strOcrFormateado = strOcrFormateado.replace("               ", ";");
+				strOcrFormateado = strOcrFormateado.replace("              ", ";");
+				strOcrFormateado = strOcrFormateado.replace("             ", ";");
+				strOcrFormateado = strOcrFormateado.replace("            ", ";");
+				strOcrFormateado = strOcrFormateado.replace("           ", ";");
+				strOcrFormateado = strOcrFormateado.replace("          ", ";");
+				strOcrFormateado = strOcrFormateado.replace("         ", ";");
+				strOcrFormateado = strOcrFormateado.replace("        ", ";");
+				strOcrFormateado = strOcrFormateado.replace("       ", ";");
+				strOcrFormateado = strOcrFormateado.replace("      ", ";");
+				strOcrFormateado = strOcrFormateado.replace("     ", ";");
+				strOcrFormateado = strOcrFormateado.replace("    ", ";");
+				strOcrFormateado = strOcrFormateado.replace("   ", ";");
+				strOcrFormateado = strOcrFormateado.replace("  ", ";");
+
+				strOcrFormateado = strOcrFormateado.replace(";;", ";");
+				strOcrFormateado = strOcrFormateado.replace(";;", ";");
+				strOcrFormateado = strOcrFormateado.replace(";;", ";");
+				// result1 = result1.replaceFirst(" ", ";");
+
+				String[] parts = strOcrFormateado.split("\n");
+				for (int i = 0; i < parts.length; i++) {
+					parts[i] = parts[i].replaceFirst(" ", ";");
+				}
+				System.out.println(strOcrFormateado);
+
+				String[] parts2 = new String[parts.length - 1];
+				Double saldoInicial = getSaldoInicial(parts[0]);
+
+				// parts tiene el formato fecha;desc;numero;valor;saldo
+				for (int i = 1; i < parts.length; i++) {
+					parts2[i - 1] = armarRegistro(parts[i], saldoInicial);
+					saldoInicial += darvalorOperacion(parts[i], saldoInicial);
+				}
+				StringJoiner sj = new StringJoiner("\n");
+				for (String s : parts2) {
+					sj.add(s);
+				}
+				strOcrFormateado = sj.toString();
+			}
 			return strOcrFormateado;
 
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw (e);
 		}
+	}
+
+	private Double darvalorOperacion(String registro, Double saldoInicial) throws Exception {
+		String reg[] = registro.split(";");
+
+		Double valor = CommonResumenBancario.String2Double(reg[3], SEP_MILES_BNA, SEP_DEC_BNA);
+
+		if (isCredito(registro, saldoInicial)) {
+			return valor;
+		}
+
+		return -1 * valor;
+	}
+
+	private String armarRegistro(String registro, Double saldoInicial) throws Exception {
+		String reg[] = registro.split(";");
+
+		String debito = reg[3];
+		String credito = "";
+
+		if (isCredito(registro, saldoInicial)) {
+			debito = "";
+			credito = reg[3];
+		}
+		return String.format("%s;%s;%s;%s;%s;%s", reg[0], reg[1], reg[2], debito, credito, reg[4]);
+	}
+
+	private boolean isCredito(String registro, Double saldoInicial) throws Exception {
+		String reg[] = registro.split(";");
+
+		Double saldo = CommonResumenBancario.String2Double(reg[4], SEP_MILES_BNA, SEP_DEC_BNA);
+
+		return (saldo > saldoInicial);
+	}
+
+	private Double getSaldoInicial(String registro) throws Exception {
+		String reg[] = registro.split(";");
+		return CommonResumenBancario.String2Double(reg[reg.length - 1], SEP_MILES_BNA, SEP_DEC_BNA);
 	}
 
 	@Override

@@ -105,7 +105,7 @@ public class WorkerBarraDeProgresoProcesar extends WorkerBarraDeProgresoBase imp
 
 	@Override
 	public void terminoHilo(Integer chunk, Hilo hilo) {
-		if (hilo.isUltimo()) {
+		if (isUltimoHiloEnEjecutar(hilo)) {
 			String nombreArchivoCSV = hilo.getArchivoOCR().getParentFile().toString() + File.separator + hilo.getArchivoProcesar().getNombreArchivo() + ".Completo.csv";
 			try {
 				// Si es el utimo, genero el csv con la union de todos.
@@ -149,6 +149,18 @@ public class WorkerBarraDeProgresoProcesar extends WorkerBarraDeProgresoBase imp
 			}
 		}
 		avanzarbBarra(chunk);
+	}
+
+	private boolean isUltimoHiloEnEjecutar(Hilo hiloAVerficar) {
+		int cantidadTermiandos = 1; //EL que llama esta por termianr pero aun no termino.
+		for (Hilo hilo : listaHilos) {
+			if (hilo.getArchivoProcesar().getNombreArchivo().equals(hiloAVerficar.getArchivoProcesar().getNombreArchivo())) {
+				if (!hilo.isAlive()) {
+					cantidadTermiandos++;
+				}
+			}
+		}
+		return cantidadTermiandos == hiloAVerficar.getTotalDeHojas();
 	}
 
 }

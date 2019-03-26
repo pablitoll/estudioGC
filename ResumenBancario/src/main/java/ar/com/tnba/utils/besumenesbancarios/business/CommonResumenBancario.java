@@ -20,4 +20,9 @@ public class CommonResumenBancario {
 		pw.println(txt);
 		pw.close();
 	}
+
+	public static Double String2Double(String valor, String sepMiles, String sepDec) throws Exception {
+		valor = valor.replaceAll(" ", "");
+		return  CommonUtils.String2Double(valor, sepMiles, sepDec);
+	}
 }

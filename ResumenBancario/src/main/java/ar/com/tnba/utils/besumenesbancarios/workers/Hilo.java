@@ -37,16 +37,16 @@ public class Hilo extends Thread {
 		return archivoOCR;
 	}
 
+	public int getTotalDeHojas() {
+		return totalDeHojas;
+	}
+
 	public int getNroHoja() {
 		return nroHoja;
 	}
 
 	public ArchivoProcesar getArchivoProcesar() {
 		return archivoProcesar;
-	}
-
-	public Boolean isUltimo() {
-		return nroHoja == totalDeHojas;
 	}
 
 	@Override
