@@ -20,11 +20,15 @@ public class ArchivoDePropiedadesBusiness {
 	}
 
 	public enum propiedades {
-		directorioDeTrabajo
+		directorioDeTrabajo, cantHilos
 	}
 
 	public static String getDirectorioDeTrabajo() throws Exception {
 		return getPropiedades().getPropiedad(propiedades.directorioDeTrabajo, "C:\\rg");
+	}
+
+	public static int getCantHilos() throws Exception {
+		return Integer.valueOf(getPropiedades().getPropiedad(propiedades.cantHilos, "3"));
 	}
 
 	public static void setDirectorioDeTrabajo(String path) throws Exception {

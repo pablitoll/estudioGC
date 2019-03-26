@@ -1,51 +1,35 @@
 package ar.com.tnba.utils.besumenesbancarios.business.bancos;
 
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.List;
 import java.util.StringJoiner;
-
-import org.apache.commons.io.FileUtils;
 
 import net.sourceforge.lept4j.util.LoadLibs;
 import net.sourceforge.tess4j.ITesseract;
 import net.sourceforge.tess4j.Tesseract1;
 
-public class AppOcrBBVA {
-	public static void main(String[] args) throws Exception {
-		final ITesseract instance = new Tesseract1(); // JNA Direct Mapping
-		// instance.setTessVariable("preserve_interword_spaces", "1");
-		// instance.setTessVariable("psm", "6");
-		instance.setDatapath("C:\\temp\\tessdata"); // path to tessdata directory
-		File tessDataFolder = LoadLibs.extractNativeResources("tessdata");
-		instance.setDatapath(tessDataFolder.getAbsolutePath());
+public class AppOcrBBVA implements BancosInterface {
 
-		File dir = new File("C:\\Users\\pmv1283\\Desktop\\ESTUDIOGC\\resumenesBBVA\\");
-
-		String[] extensions = new String[] { "tif" };
-
-		List<File> ficheros = (List<File>) FileUtils.listFiles(dir, extensions, true);
-		// int i = 0;
-		for (final File archivo : ficheros) {
-			procesarArchivo(instance, archivo);
-		}
-
-	}
-
-	/**
-	 * @param instance
-	 * @param archivo
-	 * @throws Exception
-	 */
-	public static String procesarArchivo(ITesseract instance, File archivo) throws Exception {
+	public String procesarArchivo(String strOcr, File archivo, Integer pagina) throws Exception {
 		try {
-			System.out.println("Procesando: " + archivo.getName());
-			String result = instance.doOCR(archivo);
-			String result1 = result.substring(result.lastIndexOf("FECHA"), result.lastIndexOf("TRANSPORTE SALDO"));
+			System.out.println("Procesando Frances: " + archivo.getName() + " Pagina " + pagina);
 
-			String[] parts = result1.split("\n");
+			String strOcrFormateado = " ";
+
+			switch (pagina) {
+			case 1:
+				strOcrFormateado = strOcr.substring(strOcr.indexOf("FECHA"), strOcr.lastIndexOf("TRANSPORTE SALDO"));
+				break;
+			default:
+				// si es ultimapagina
+				if (strOcr.indexOf("TOTAL MOVIMIENTOS") > 0) {
+					strOcrFormateado = strOcr.substring(strOcr.lastIndexOf("TRANSPORTE SALDO"), strOcr.indexOf("SALDO AL"));
+				} else {
+					strOcrFormateado = strOcr.substring(strOcr.indexOf("TRANSPORTE SALDO"), strOcr.lastIndexOf("TRANSPORTE SALDO"));
+				}
+				break;
+			}
+
+			String[] parts = strOcrFormateado.split("\n");
 
 			String saldoInicial = "";
 			// busco el saldo inicial o el transporte saldo
@@ -87,9 +71,14 @@ public class AppOcrBBVA {
 
 				// Si el saldo Final > al Saldo Inicial Credito
 
-				double dblSaldoInicial = Double.parseDouble(saldoInicial.replace(" ", "").replace(".", "").replace(",", "."));
+				double dblSaldoInicial = SanityDouble(saldoInicial);
+				// .parseDouble(saldoInicial.replace(" ", "").replace(".", "").replace(",",
+				// "."));
 				saldoInicial = sb.substring(sb.lastIndexOf(";") + 1, sb.length());
-				double dblSaldoFinal = Double.parseDouble(saldoFinal.replace(" ", ""));
+				double dblSaldoFinal = SanityDouble(saldoFinal);
+				// solo tiene un punto.
+				// dblSaldoFinal = SanityDouble(saldoFinal);
+
 				if (dblSaldoFinal > dblSaldoInicial) {
 					// credito
 
@@ -99,9 +88,6 @@ public class AppOcrBBVA {
 				}
 
 				parts2[i] = sb.toString();
-				System.out.println(c);
-				//
-				System.out.println(parts2[i]);
 
 			}
 
@@ -109,21 +95,44 @@ public class AppOcrBBVA {
 			for (String s : parts2) {
 				sj.add(s);
 			}
-			result1 = sj.toString();
-
-			// String[] parts = result1.split("\n");
-			// for (int i = 0; i < parts.length; i++) {
-			// parts[i] = parts[i].replaceFirst(" ", ";");
-			// }
-			System.out.println(result1);
-			return result1;
-			// Files.write(Paths.get("C:\\Users\\pmv1283\\Desktop\\ESTUDIOGC\\resumenesBBVA\\"
-			// + archivo.getName() + ".csv"), result1.getBytes(), StandardOpenOption.CREATE,
-			// StandardOpenOption.APPEND);
+			strOcrFormateado = sj.toString();
+			return strOcrFormateado;
 
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw (e);
 		}
+	}
+
+	private double SanityDouble(String cadena) {
+		double dblSaldoFinal;
+		String aux = cadena;
+		// saco los blancos
+		aux = aux.replace(" ", "");
+		// saco todos los puntos
+		aux = aux.replace(".", "");
+		// saco todos las comas
+		aux = aux.replace(",", "");
+		// le agrego un punto a 2 caracteres del final
+		String saldoFinalaux = new StringBuilder(aux).insert(aux.length() - 2, ".").toString(); // asumo que el ultimo
+
+		aux = saldoFinalaux.toString();
+
+		dblSaldoFinal = Double.parseDouble(aux);
+
+		return dblSaldoFinal;
+	}
+
+	public String getOCR(File archivoOCR) throws Exception {
+		System.out.println("Procesando OCR: " + archivoOCR.getName());
+		return getInstanceFrances(archivoOCR).doOCR(archivoOCR);
+	}
+
+	private ITesseract getInstanceFrances(File archivoOCR) {
+		Tesseract1 instanceFrances = new Tesseract1(); // JNA Direct Mapping
+		instanceFrances.setDatapath(archivoOCR.getParent() + File.separator + "temp\\tessdata"); // path to tessdata directory
+		File tessDataFolder = LoadLibs.extractNativeResources("tessdata");
+		instanceFrances.setDatapath(tessDataFolder.getAbsolutePath());
+		return instanceFrances;
 	}
 }

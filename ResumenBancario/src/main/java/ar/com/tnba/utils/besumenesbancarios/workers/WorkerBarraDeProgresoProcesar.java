@@ -6,13 +6,14 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 
+import ar.com.tnba.utils.besumenesbancarios.business.ArchivoDePropiedadesBusiness;
 import ar.com.tnba.utils.besumenesbancarios.business.ConvertPDFtoTIFF;
 import ar.com.tnba.utils.besumenesbancarios.dto.ArchivoProcesar;
 import ar.com.tnba.utils.besumenesbancarios.ui.BarraDeProgreso;
 
 public class WorkerBarraDeProgresoProcesar extends WorkerBarraDeProgresoBase implements CallBackWorker {
 
-	private static final int CANT_HILO_MAX = 3;
+	private final int CANT_HILO_MAX = ArchivoDePropiedadesBusiness.getCantHilos();
 	private static final int SIZE_SLOT_CHUNK = 100000;
 	private Boolean huboErroresDeCajaCerrada = false;
 	private List<ArchivoProcesar> listaArchivoProcesar;

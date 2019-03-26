@@ -2,7 +2,7 @@ package ar.com.tnba.utils.besumenesbancarios.dto;
 
 import java.io.File;
 
-import ar.com.tnba.utils.besumenesbancarios.business.BancosBusiness.Bancos;
+import ar.com.tnba.utils.besumenesbancarios.business.bancos.BancosBusiness.Bancos;
 
 public class ArchivoProcesar {
 
