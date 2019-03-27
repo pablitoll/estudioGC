@@ -3,6 +3,8 @@ package ar.com.tnba.utils.besumenesbancarios.business.bancos;
 import java.io.File;
 import java.util.StringJoiner;
 
+import ar.com.rp.rpcutils.CommonUtils;
+import ar.com.rp.ui.common.Common;
 import ar.com.tnba.utils.besumenesbancarios.business.CommonResumenBancario;
 import net.sourceforge.lept4j.util.LoadLibs;
 import net.sourceforge.tess4j.ITesseract;
@@ -12,6 +14,10 @@ public class AppOcrBBVA implements BancosInterface {
 
 	private static final String SEP_MIL_FRANCES = ".";
 	private static final String SEP_DEC_FRANCES = ",";
+	private static final String TRANSPORTE_SALDO = "TRANSPORTE SALDO";
+	private static final String SALDO_AL = "SALDO AL";
+	private static final String SALDO_ANTERIOR = "SALDO ANTERIOR";
+	private static final String SIN_MOVIMIENTOS = "S/MOVIMIENTOS";
 
 	public String procesarArchivo(String strOcr, File archivo, Integer pagina) throws Exception {
 		try {
@@ -19,29 +25,29 @@ public class AppOcrBBVA implements BancosInterface {
 
 			String strOcrFormateado = "";
 
-			int idxTransporteFin = strOcr.lastIndexOf("TRANSPORTE SALDO");
-			int idxSaldoAl = strOcr.indexOf("SALDO AL");
+			int idxTransporteFin = strOcr.lastIndexOf(TRANSPORTE_SALDO);
+			int idxSaldoAl = strOcr.indexOf(SALDO_AL);
 			int idxFin = (idxTransporteFin > -1 ? idxTransporteFin : idxSaldoAl);
 
-			int idxTransporteInicio = strOcr.indexOf("TRANSPORTE SALDO");
-			int idxSaldoAnt = strOcr.indexOf("SALDO ANTERIOR");
+			int idxTransporteInicio = strOcr.indexOf(TRANSPORTE_SALDO);
+			int idxSaldoAnt = strOcr.indexOf(SALDO_ANTERIOR);
 			int idxIni = (idxTransporteInicio > -1 ? idxTransporteInicio : idxSaldoAnt);
 
 			if ((idxIni > -1) && (idxFin > -1) && (idxIni < idxFin)) {
 
 				strOcrFormateado = strOcr.substring(idxIni, idxFin);
 
-				if (!strOcrFormateado.contains("S/MOVIMIENTOS")) {
+				if (!strOcrFormateado.contains(SIN_MOVIMIENTOS)) {
 
 					String[] parts = strOcrFormateado.split("\n");
 
-					String saldoInicial = parts[0].replace("SALDO ANTERIOR ", "").replaceAll("SALDO ANTERIOR", "");
-					double dblSaldoInicial = CommonResumenBancario.String2Double(saldoInicial, SEP_MIL_FRANCES, SEP_DEC_FRANCES);
+					String saldoInicial = parts[0].replace(TRANSPORTE_SALDO, "").replaceAll(SALDO_ANTERIOR, "");
+					Double dblSaldoAnterior = CommonResumenBancario.String2Double(saldoInicial, SEP_MIL_FRANCES, SEP_DEC_FRANCES);
 
 					// retiro las 2 primeras lineas
 					String[] parts2 = new String[parts.length - 1];
 					for (int i = 1; i < parts.length; i++) {
-						if (!parts[i].contains("S/MOVIMIENTOS")) {
+						if (!parts[i].contains(SIN_MOVIMIENTOS)) {
 							parts2[i - 1] = parts[i];
 						}
 					}
@@ -49,7 +55,7 @@ public class AppOcrBBVA implements BancosInterface {
 					for (int i = 0; i < parts2.length; i++) {
 
 						// saco el blanco despues de la coma en el saldo
-						parts2[i] = parts2[i].replace(", ", ",");
+						parts2[i] = parts2[i].replace(", ", ",").replace(" ,", ",");
 						String c = parts2[i];
 						// // separo fecha
 						StringBuffer sb = new StringBuffer(c);
@@ -64,20 +70,24 @@ public class AppOcrBBVA implements BancosInterface {
 
 						String saldoFinal = rengistroSplit[rengistroSplit.length - 1];
 
-						double dblSaldoFinal = CommonResumenBancario.String2Double(saldoFinal, SEP_MIL_FRANCES, SEP_DEC_FRANCES);
+						double dblSaldoRenglon = CommonResumenBancario.String2Double(saldoFinal, SEP_MIL_FRANCES, SEP_DEC_FRANCES);
+						double dblValorMovimiento = CommonResumenBancario.String2Double(rengistroSplit[2], SEP_MIL_FRANCES, SEP_DEC_FRANCES);
 
 						String debito = "";
 						String credito = "";
-						if (dblSaldoFinal > dblSaldoInicial) {
+						if (dblSaldoRenglon > dblSaldoAnterior) {
 							// credito
-							dblSaldoInicial += dblSaldoFinal;
-							credito = rengistroSplit[2];
-						} else { // debito
-							dblSaldoInicial -= dblSaldoFinal;
-							debito = rengistroSplit[2];
-						}
+							credito = CommonUtils.double2String(dblValorMovimiento, Common.getGeneralSettings().getSeparadorMiles(),
+									Common.getGeneralSettings().getSeparadorDecimal());
 
-						parts2[i] = String.format("%s;%s;%s;%s;%s", rengistroSplit[0], rengistroSplit[1], debito, credito, rengistroSplit[3]);
+						} else { // debito
+							debito = CommonUtils.double2String(dblValorMovimiento, Common.getGeneralSettings().getSeparadorMiles(),
+									Common.getGeneralSettings().getSeparadorDecimal());
+						}
+						dblSaldoAnterior = dblSaldoRenglon;
+
+						parts2[i] = String.format("%s;%s;%s;%s;%s", rengistroSplit[0], rengistroSplit[1], debito, credito,
+								CommonUtils.double2String(dblSaldoRenglon, Common.getGeneralSettings().getSeparadorMiles(), Common.getGeneralSettings().getSeparadorDecimal()));
 					}
 
 					StringJoiner sj = new StringJoiner("\n");

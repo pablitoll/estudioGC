@@ -49,16 +49,19 @@ public class WorkerBarraDeProgresoProcesar extends WorkerBarraDeProgresoBase imp
 
 			avanzarbBarra(chunk);
 			while (nroHoja <= listaARchivoOCR.size() && !cancelar) {
+				
 
 				if (hayHiloLibre()) {
-					File archivoOCR = listaARchivoOCR.get(nroHoja - 1);
-					pantalla.setTitle(String.format("%s - %s - %s Hojas", archivoProcesar.getBanco().getNombre(), archivoProcesar.getNombreArchivo(), listaARchivoOCR.size()));
-					Hilo hiloLibre = new Hilo(archivoOCR, nroHoja, listaARchivoOCR.size(), archivoProcesar, this, chunk, directorioDestino);
+					// TODO SACAR
+					if (nroHoja == 8) {
+						File archivoOCR = listaARchivoOCR.get(nroHoja - 1);
+						pantalla.setTitle(String.format("%s - %s - %s Hojas", archivoProcesar.getBanco().getNombre(), archivoProcesar.getNombreArchivo(), listaARchivoOCR.size()));
+						Hilo hiloLibre = new Hilo(archivoOCR, nroHoja, listaARchivoOCR.size(), archivoProcesar, this, chunk, directorioDestino);
 
-					listaHilos.add(hiloLibre);
-					hiloLibre.start();
-					wait(500);
-
+						listaHilos.add(hiloLibre);
+						hiloLibre.start();
+						wait(500);
+					}
 					nroHoja++;
 				} else {
 					wait(4000);
@@ -117,9 +120,11 @@ public class WorkerBarraDeProgresoProcesar extends WorkerBarraDeProgresoBase imp
 				}
 
 				PrintWriter pw = new PrintWriter(nombreArchivoCSV);
+				boolean hayError = false;
 				for (File f : listaFile) {
 					if (f.isFile()) {
 						String nombreArchivo = f.getName();
+
 						if (nombreArchivo.substring(nombreArchivo.lastIndexOf(".")).equalsIgnoreCase(".csv")) {
 							entro = true;
 							BufferedReader br = new BufferedReader(new FileReader(f));
@@ -130,13 +135,24 @@ public class WorkerBarraDeProgresoProcesar extends WorkerBarraDeProgresoBase imp
 							}
 							br.close();
 						}
+
+						if (nombreArchivo.substring(nombreArchivo.lastIndexOf(".")).equalsIgnoreCase(".ERROR")) {
+							hayError = true;
+						}
 					}
 				}
 				pw.flush();
 				pw.close();
 
-				if (!entro) {
-					CommonResumenBancario.txt2File("No hay archivo csv para generados", nombreArchivoCSV + ".ERROR");
+				if (hayError) {
+					CommonResumenBancario.txt2File("Hay Archivos con Error, no se puede generar el CSV", nombreArchivoCSV + ".ERROR");
+					File nombreArchivoCSVFile = new File(nombreArchivoCSV);
+					nombreArchivoCSVFile.delete(); // Lo borro porque al haber algun csv con error, no se puede generar el csv
+				} else {
+
+					if (!entro) {
+						CommonResumenBancario.txt2File("No hay archivo csv para generados", nombreArchivoCSV + ".ERROR");
+					}
 				}
 
 			} catch (Exception e) {
@@ -152,7 +168,7 @@ public class WorkerBarraDeProgresoProcesar extends WorkerBarraDeProgresoBase imp
 	}
 
 	private boolean isUltimoHiloEnEjecutar(Hilo hiloAVerficar) {
-		int cantidadTermiandos = 1; //EL que llama esta por termianr pero aun no termino.
+		int cantidadTermiandos = 1; // EL que llama esta por termianr pero aun no termino.
 		for (Hilo hilo : listaHilos) {
 			if (hilo.getArchivoProcesar().getNombreArchivo().equals(hiloAVerficar.getArchivoProcesar().getNombreArchivo())) {
 				if (!hilo.isAlive()) {
