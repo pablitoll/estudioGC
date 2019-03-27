@@ -3,6 +3,7 @@ package ar.com.tnba.utils.besumenesbancarios.business.bancos;
 import java.io.File;
 import java.util.StringJoiner;
 
+import ar.com.rp.rpcutils.CommonUtils;
 import ar.com.tnba.utils.besumenesbancarios.business.CommonResumenBancario;
 import net.sourceforge.lept4j.util.LoadLibs;
 import net.sourceforge.tess4j.ITesseract;
@@ -106,15 +107,20 @@ public class AppOcrBNA implements BancosInterface {
 
 	private String armarRegistro(String registro, Double saldoInicial) throws Exception {
 		String reg[] = registro.split(";");
+		Double saldo = CommonResumenBancario.String2Double(reg[4], SEP_MILES_BNA, SEP_DEC_BNA);
+		String strSaldo = CommonUtils.double2String(saldo, SEP_MILES_BNA, SEP_DEC_BNA);
 
-		String debito = reg[3];
+		Double valorReg = CommonResumenBancario.String2Double(reg[3], SEP_MILES_BNA, SEP_DEC_BNA);
+		String strvalorReg = CommonUtils.double2String(valorReg, SEP_MILES_BNA, SEP_DEC_BNA);
+
+		String debito = strvalorReg;
 		String credito = "";
 
 		if (isCredito(registro, saldoInicial)) {
 			debito = "";
-			credito = reg[3];
+			credito = strvalorReg;
 		}
-		return String.format("%s;%s;%s;%s;%s;%s", reg[0], reg[1], reg[2], debito, credito, reg[4]);
+		return String.format("%s;%s;%s;%s;%s;%s", reg[0], reg[1], reg[2], debito, credito, strSaldo);
 	}
 
 	private boolean isCredito(String registro, Double saldoInicial) throws Exception {

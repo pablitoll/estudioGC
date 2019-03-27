@@ -1,6 +1,8 @@
 package ar.com.tnba.utils.besumenesbancarios.ui;
 
 import java.awt.EventQueue;
+import java.io.BufferedReader;
+import java.io.FileReader;
 
 import javax.swing.JOptionPane;
 
@@ -35,6 +37,11 @@ public class Main extends MainFramework {
 			splashMsg("Cargando archivo de Log");
 			LogBusiness.inicializarLogManager();
 
+			if (!isValidVersion()) {
+				Dialog.showMessageDialog("No esta habilitada esta maquina para correr la aplicacion", "Version no habilitada", JOptionPane.ERROR_MESSAGE);
+				System.exit(0);
+			}
+
 			if (isRunning(PORT)) {
 				String[] option = { "Si", "No" };
 				Object confirm = Dialog.showConfirmDialogObject("<html>Ya hay una instancia de la aplicacion ejecutandose <br>Desea Abrir otra instancia?</html>",
@@ -49,11 +56,28 @@ public class Main extends MainFramework {
 
 			PantallaPrincipal pantallaPrincipal = new PantallaPrincipal();
 			pantallaPrincipal.iniciar();
-			
 
 		} catch (Exception e) {
 			ManejoDeError.showError(e, "Error al iniciar");
 			System.exit(-1);
 		}
+	}
+
+	private static boolean isValidVersion() {
+		try {
+			FileReader fr = new FileReader("c:\\Users\\Public\\USER.RB");
+			BufferedReader br = new BufferedReader(fr);
+
+			String codigo = br.readLine();
+
+			br.close();
+			fr.close();
+
+			return codigo.equals("1277");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return false;
+
 	}
 }

@@ -53,9 +53,10 @@ public class AppOcrBBVA implements BancosInterface {
 					}
 
 					for (int i = 0; i < parts2.length; i++) {
-
 						// saco el blanco despues de la coma en el saldo
-						parts2[i] = parts2[i].replace(", ", ",").replace(" ,", ",");
+						parts2[i] = parts2[i].replaceAll(", ", ",");
+								parts2[i] = parts2[i].replaceAll(" ,", ",");
+						parts2[i] = parts2[i].replaceAll(" \\.",".");
 						String c = parts2[i];
 						// // separo fecha
 						StringBuffer sb = new StringBuffer(c);
