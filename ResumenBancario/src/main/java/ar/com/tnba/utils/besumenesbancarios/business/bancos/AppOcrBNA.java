@@ -69,7 +69,7 @@ public class AppOcrBNA implements BancosInterface {
 				for (int i = 0; i < parts.length; i++) {
 					parts[i] = parts[i].replaceFirst(" ", ";");
 				}
-				System.out.println(strOcrFormateado);
+				//System.out.println(strOcrFormateado);
 
 				String[] parts2 = new String[parts.length - 1];
 				Double saldoInicial = getSaldoInicial(parts[0]);
