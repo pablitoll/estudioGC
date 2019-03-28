@@ -18,22 +18,33 @@ public class AppOcrBBVA implements BancosInterface {
 	private static final String SALDO_AL = "SALDO AL";
 	private static final String SALDO_ANTERIOR = "SALDO ANTERIOR";
 	private static final String SIN_MOVIMIENTOS = "S/MOVIMIENTOS";
+	private static final int NUMERO_ALTO = 9999999;
 
 	public String procesarArchivo(String strOcr, File archivo, Integer pagina) throws Exception {
 		try {
 			System.out.println("Procesando Frances: " + archivo.getName() + " Pagina " + pagina);
 
 			String strOcrFormateado = "";
+			Integer vecMin[] = new Integer[2];
+			// Calculo pos final
+			Integer idxTransporteFin = strOcr.lastIndexOf(TRANSPORTE_SALDO);
+			Integer idxSaldoAl = strOcr.indexOf(SALDO_AL);
 
-			int idxTransporteFin = strOcr.lastIndexOf(TRANSPORTE_SALDO);
-			int idxSaldoAl = strOcr.indexOf(SALDO_AL);
-			int idxFin = (idxTransporteFin > -1 ? idxTransporteFin : idxSaldoAl);
+			vecMin[0] = idxTransporteFin == -1 ? NUMERO_ALTO : idxTransporteFin;
+			vecMin[1] = idxSaldoAl == -1 ? NUMERO_ALTO : idxSaldoAl;
 
-			int idxTransporteInicio = strOcr.indexOf(TRANSPORTE_SALDO);
-			int idxSaldoAnt = strOcr.indexOf(SALDO_ANTERIOR);
-			int idxIni = (idxTransporteInicio > -1 ? idxTransporteInicio : idxSaldoAnt);
+			Integer idxFin = CommonUtils.minimo(vecMin);
 
-			if ((idxIni > -1) && (idxFin > -1) && (idxIni < idxFin)) {
+			// Calculo pos ini
+			Integer idxTransporteInicio = strOcr.indexOf(TRANSPORTE_SALDO);
+			Integer idxSaldoAnt = strOcr.indexOf(SALDO_ANTERIOR);
+
+			vecMin[0] = idxTransporteInicio == -1 ? NUMERO_ALTO : idxTransporteInicio;
+			vecMin[1] = idxSaldoAnt == -1 ? NUMERO_ALTO : idxSaldoAnt;
+
+			Integer idxIni = CommonUtils.minimo(vecMin);
+
+			if ((idxIni != NUMERO_ALTO) && (idxFin != NUMERO_ALTO) && (idxIni < idxFin)) {
 
 				strOcrFormateado = strOcr.substring(idxIni, idxFin);
 
@@ -55,8 +66,8 @@ public class AppOcrBBVA implements BancosInterface {
 					for (int i = 0; i < parts2.length; i++) {
 						// saco el blanco despues de la coma en el saldo
 						parts2[i] = parts2[i].replaceAll(", ", ",");
-								parts2[i] = parts2[i].replaceAll(" ,", ",");
-						parts2[i] = parts2[i].replaceAll(" \\.",".");
+						parts2[i] = parts2[i].replaceAll(" ,", ",");
+						parts2[i] = parts2[i].replaceAll(" \\.", ".");
 						String c = parts2[i];
 						// // separo fecha
 						StringBuffer sb = new StringBuffer(c);

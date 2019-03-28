@@ -96,7 +96,12 @@ public class WorkerBarraDeProgresoProcesar extends WorkerBarraDeProgresoBase imp
 				cant++;
 			}
 		}
-		return cant < CANT_HILO_MAX;
+		return cant < getCantHilosMax();
+	}
+
+	private int getCantHilosMax() {
+		// TODO Auto-generated method stub
+		return CANT_HILO_MAX;
 	}
 
 	public Boolean getHuboErroresDeCajaCerrada() {
