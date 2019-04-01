@@ -4,7 +4,8 @@ public class BancosBusiness {
 
 	public enum Bancos {
 		BancoNacion("00011", "BancoNacion", "BANCO DE LA NACION ARGENTINA", 11, "AppOcrBNA"),
-		BancoFrances("00017", "BancoFrances", "BBVA BANCO FRANCES S.A.", 17, "AppOcrBBVA");
+		BancoFrances("00017", "BancoFrances", "BBVA BANCO FRANCES S.A.", 17, "AppOcrBBVA"),
+		ICBC("00017", "BancoICBC", "ICBC", 18, "AppOcrICBC");
 
 		private String codigo;
 		private String directorio;

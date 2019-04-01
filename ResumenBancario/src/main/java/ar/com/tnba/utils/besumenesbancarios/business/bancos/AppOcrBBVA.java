@@ -69,7 +69,8 @@ public class AppOcrBBVA implements BancosInterface {
 						parts2[i] = parts2[i].replaceAll(" ,", ",");
 						parts2[i] = parts2[i].replaceAll(" \\.", ".");
 						String c = parts2[i];
-						// // separo fecha
+						
+						// separo fecha
 						StringBuffer sb = new StringBuffer(c);
 						sb.setCharAt(5, ';');
 						int finmovi = sb.lastIndexOf(" ");

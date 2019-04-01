@@ -5,6 +5,7 @@ public class ConstantesTool {
 	public static String IMG_SEARCH = "images/search.png";
 	public static String IMG_EXCEL = "images/ExcelIcono.png";
 	public static String IMG_RECARGAR = "images/reload.png";
+	public static String IMG_SPLASH = "images/splash.png";
 
 }
 /*

@@ -100,7 +100,7 @@ public class WorkerBarraDeProgresoProcesar extends WorkerBarraDeProgresoBase imp
 	}
 
 	private int getCantHilosMax() {
-		// TODO Auto-generated method stub
+		// TODO terminar
 		return CANT_HILO_MAX;
 	}
 

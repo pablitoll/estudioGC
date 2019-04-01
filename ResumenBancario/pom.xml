@@ -62,7 +62,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>ar.com.rollpaper.pricing.ui.SplashScreen</mainClass>
+							<mainClass>ar.com.tnba.utils.besumenesbancarios.ui.SplashScreen</mainClass>
 						</manifest>
 					</archive>
 					<descriptorRefs>

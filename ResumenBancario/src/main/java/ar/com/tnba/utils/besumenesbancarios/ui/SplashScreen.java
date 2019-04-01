@@ -1,13 +1,11 @@
 package ar.com.tnba.utils.besumenesbancarios.ui;
 
-import java.awt.Color;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.HeadlessException;
-import java.awt.Toolkit;
 import java.awt.event.ActionListener;
 
-import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JWindow;
 import javax.swing.Timer;
@@ -15,7 +13,10 @@ import javax.swing.Timer;
 import com.alee.extended.image.DisplayType;
 import com.alee.extended.image.WebImage;
 
+import ar.com.rp.rpcutils.CommonUtils;
 import ar.com.tnba.utils.besumenesbancarios.business.ArchivoDePropiedadesBusiness;
+import ar.com.tnba.utils.besumenesbancarios.business.ConstantesTool;
+import java.awt.BorderLayout;
 
 public class SplashScreen extends JWindow {
 
@@ -32,26 +33,17 @@ public class SplashScreen extends JWindow {
 	public SplashScreen() {
 
 		Container container = getContentPane();
-		container.setLayout(null);
-		JPanel panel = new JPanel();
-		panel.setBorder(new javax.swing.border.EtchedBorder());
-		panel.setBackground(new Color(255, 255, 255));
-		panel.setBounds(10, 10, 528, 308);
-		panel.setLayout(null);
-		container.add(panel);
-
-		WebImage webImage3 = new WebImage(Toolkit.getDefaultToolkit().getImage(SplashScreen.class.getResource("/images/rpLogo.PNG")));
-		webImage3.setDisplayType(DisplayType.fitComponent);
-		webImage3.setImage(Toolkit.getDefaultToolkit().getImage(SplashScreen.class.getResource("/images/rpLogo.PNG")));
-		webImage3.setBounds(0, 0, 525, 312);
-		panel.add(webImage3);
+		getContentPane().setLayout(new BorderLayout(0, 0));
+		progressBar.setPreferredSize(new Dimension(146, 30));
 
 		progressBar.setMaximum(50);
-		progressBar.setBounds(10, 329, 528, 38);
-		container.add(progressBar);
-		loadProgressBar();
-		setSize(548, 378);
+		container.add(progressBar, BorderLayout.SOUTH);
+		WebImage webImage3 = new WebImage(CommonUtils.loadImage(ConstantesTool.IMG_SPLASH));
+		webImage3.setDisplayType(DisplayType.fitComponent);
+		getContentPane().add(webImage3);
+		setSize(430, 400);
 		setLocationRelativeTo(null);
+		loadProgressBar();
 		setVisible(true);
 	}
 
@@ -92,7 +84,7 @@ public class SplashScreen extends JWindow {
 				});
 			}
 		};
-		timer1 = new Timer(7, al);
+		timer1 = new Timer(20, al);
 		timer1.start();
 	}
 
