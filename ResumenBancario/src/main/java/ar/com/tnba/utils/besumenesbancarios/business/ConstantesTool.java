@@ -6,6 +6,11 @@ public class ConstantesTool {
 	public static String IMG_EXCEL = "images/ExcelIcono.png";
 	public static String IMG_RECARGAR = "images/reload.png";
 	public static String IMG_SPLASH = "images/splash.png";
+	
+	public static final String SEP_MILES = ".";
+	public static final String SEP_DEC = ",";
+	public static final int NUMERO_ALTO = 999999;
+	public static final String LEYENDA_FALLO = "FALLO EL ANALISIS DE ESTE REGISTRO (POSICION: %s)";
 
 }
 /*

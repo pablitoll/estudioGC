@@ -5,14 +5,13 @@ import java.util.StringJoiner;
 
 import ar.com.rp.rpcutils.CommonUtils;
 import ar.com.tnba.utils.besumenesbancarios.business.CommonResumenBancario;
+import ar.com.tnba.utils.besumenesbancarios.business.ConstantesTool;
+import ar.com.tnba.utils.besumenesbancarios.business.LogManager;
 import net.sourceforge.lept4j.util.LoadLibs;
 import net.sourceforge.tess4j.ITesseract;
 import net.sourceforge.tess4j.Tesseract1;
 
 public class AppOcrBNA implements BancosInterface {
-
-	private static final String SEP_MILES_BNA = ".";
-	private static final String SEP_DEC_BNA = ",";
 
 	@Override
 	public String procesarArchivo(String strOcr, File archivo, Integer pagina) throws Exception {
@@ -69,15 +68,25 @@ public class AppOcrBNA implements BancosInterface {
 				for (int i = 0; i < parts.length; i++) {
 					parts[i] = parts[i].replaceFirst(" ", ";");
 				}
-				//System.out.println(strOcrFormateado);
+				// System.out.println(strOcrFormateado);
 
 				String[] parts2 = new String[parts.length - 1];
 				Double saldoInicial = getSaldoInicial(parts[0]);
 
 				// parts tiene el formato fecha;desc;numero;valor;saldo
 				for (int i = 1; i < parts.length; i++) {
-					parts2[i - 1] = armarRegistro(parts[i], saldoInicial);
-					saldoInicial += darvalorOperacion(parts[i], saldoInicial);
+					try {
+						parts2[i - 1] = armarRegistro(parts[i], saldoInicial);
+						saldoInicial += darvalorOperacion(parts[i], saldoInicial);
+					} catch (Exception e) {
+						e.printStackTrace();
+						parts2[i - 1] = String.format(ConstantesTool.LEYENDA_FALLO, i + 1);
+						try {
+							LogManager.getLogManager().logError(e);
+						} catch (Exception e2) {
+							e.printStackTrace();
+						}
+					}
 				}
 				StringJoiner sj = new StringJoiner("\n");
 				for (String s : parts2) {
@@ -96,7 +105,7 @@ public class AppOcrBNA implements BancosInterface {
 	private Double darvalorOperacion(String registro, Double saldoInicial) throws Exception {
 		String reg[] = registro.split(";");
 
-		Double valor = CommonResumenBancario.String2Double(reg[3], SEP_MILES_BNA, SEP_DEC_BNA);
+		Double valor = CommonResumenBancario.String2Double(reg[3], ConstantesTool.SEP_MILES, ConstantesTool.SEP_DEC);
 
 		if (isCredito(registro, saldoInicial)) {
 			return valor;
@@ -107,11 +116,11 @@ public class AppOcrBNA implements BancosInterface {
 
 	private String armarRegistro(String registro, Double saldoInicial) throws Exception {
 		String reg[] = registro.split(";");
-		Double saldo = CommonResumenBancario.String2Double(reg[4], SEP_MILES_BNA, SEP_DEC_BNA);
-		String strSaldo = CommonUtils.double2String(saldo, SEP_MILES_BNA, SEP_DEC_BNA);
+		Double saldo = CommonResumenBancario.String2Double(reg[4], ConstantesTool.SEP_MILES, ConstantesTool.SEP_DEC);
+		String strSaldo = CommonUtils.double2String(saldo, ConstantesTool.SEP_MILES, ConstantesTool.SEP_DEC);
 
-		Double valorReg = CommonResumenBancario.String2Double(reg[3], SEP_MILES_BNA, SEP_DEC_BNA);
-		String strvalorReg = CommonUtils.double2String(valorReg, SEP_MILES_BNA, SEP_DEC_BNA);
+		Double valorReg = CommonResumenBancario.String2Double(reg[3], ConstantesTool.SEP_MILES, ConstantesTool.SEP_DEC);
+		String strvalorReg = CommonUtils.double2String(valorReg, ConstantesTool.SEP_MILES, ConstantesTool.SEP_DEC);
 
 		String debito = strvalorReg;
 		String credito = "";
@@ -126,14 +135,14 @@ public class AppOcrBNA implements BancosInterface {
 	private boolean isCredito(String registro, Double saldoInicial) throws Exception {
 		String reg[] = registro.split(";");
 
-		Double saldo = CommonResumenBancario.String2Double(reg[4], SEP_MILES_BNA, SEP_DEC_BNA);
+		Double saldo = CommonResumenBancario.String2Double(reg[4], ConstantesTool.SEP_MILES, ConstantesTool.SEP_DEC);
 
 		return (saldo > saldoInicial);
 	}
 
 	private Double getSaldoInicial(String registro) throws Exception {
 		String reg[] = registro.split(";");
-		return CommonResumenBancario.String2Double(reg[reg.length - 1], SEP_MILES_BNA, SEP_DEC_BNA);
+		return CommonResumenBancario.String2Double(reg[reg.length - 1], ConstantesTool.SEP_MILES, ConstantesTool.SEP_DEC);
 	}
 
 	@Override

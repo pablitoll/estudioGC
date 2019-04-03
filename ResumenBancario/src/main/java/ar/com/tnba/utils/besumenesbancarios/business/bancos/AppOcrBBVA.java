@@ -6,19 +6,18 @@ import java.util.StringJoiner;
 import ar.com.rp.rpcutils.CommonUtils;
 import ar.com.rp.ui.common.Common;
 import ar.com.tnba.utils.besumenesbancarios.business.CommonResumenBancario;
+import ar.com.tnba.utils.besumenesbancarios.business.ConstantesTool;
+import ar.com.tnba.utils.besumenesbancarios.business.LogManager;
 import net.sourceforge.lept4j.util.LoadLibs;
 import net.sourceforge.tess4j.ITesseract;
 import net.sourceforge.tess4j.Tesseract1;
 
 public class AppOcrBBVA implements BancosInterface {
 
-	private static final String SEP_MIL_FRANCES = ".";
-	private static final String SEP_DEC_FRANCES = ",";
 	private static final String TRANSPORTE_SALDO = "TRANSPORTE SALDO";
 	private static final String SALDO_AL = "SALDO AL";
 	private static final String SALDO_ANTERIOR = "SALDO ANTERIOR";
 	private static final String SIN_MOVIMIENTOS = "S/MOVIMIENTOS";
-	private static final int NUMERO_ALTO = 9999999;
 
 	public String procesarArchivo(String strOcr, File archivo, Integer pagina) throws Exception {
 		try {
@@ -30,8 +29,8 @@ public class AppOcrBBVA implements BancosInterface {
 			Integer idxTransporteFin = strOcr.lastIndexOf(TRANSPORTE_SALDO);
 			Integer idxSaldoAl = strOcr.indexOf(SALDO_AL);
 
-			vecMin[0] = idxTransporteFin == -1 ? NUMERO_ALTO : idxTransporteFin;
-			vecMin[1] = idxSaldoAl == -1 ? NUMERO_ALTO : idxSaldoAl;
+			vecMin[0] = idxTransporteFin == -1 ? ConstantesTool.NUMERO_ALTO : idxTransporteFin;
+			vecMin[1] = idxSaldoAl == -1 ? ConstantesTool.NUMERO_ALTO : idxSaldoAl;
 
 			Integer idxFin = CommonUtils.minimo(vecMin);
 
@@ -39,12 +38,12 @@ public class AppOcrBBVA implements BancosInterface {
 			Integer idxTransporteInicio = strOcr.indexOf(TRANSPORTE_SALDO);
 			Integer idxSaldoAnt = strOcr.indexOf(SALDO_ANTERIOR);
 
-			vecMin[0] = idxTransporteInicio == -1 ? NUMERO_ALTO : idxTransporteInicio;
-			vecMin[1] = idxSaldoAnt == -1 ? NUMERO_ALTO : idxSaldoAnt;
+			vecMin[0] = idxTransporteInicio == -1 ? ConstantesTool.NUMERO_ALTO : idxTransporteInicio;
+			vecMin[1] = idxSaldoAnt == -1 ? ConstantesTool.NUMERO_ALTO : idxSaldoAnt;
 
 			Integer idxIni = CommonUtils.minimo(vecMin);
 
-			if ((idxIni != NUMERO_ALTO) && (idxFin != NUMERO_ALTO) && (idxIni < idxFin)) {
+			if ((idxIni != ConstantesTool.NUMERO_ALTO) && (idxFin != ConstantesTool.NUMERO_ALTO) && (idxIni < idxFin)) {
 
 				strOcrFormateado = strOcr.substring(idxIni, idxFin);
 
@@ -53,7 +52,7 @@ public class AppOcrBBVA implements BancosInterface {
 					String[] parts = strOcrFormateado.split("\n");
 
 					String saldoInicial = parts[0].replace(TRANSPORTE_SALDO, "").replaceAll(SALDO_ANTERIOR, "");
-					Double dblSaldoAnterior = CommonResumenBancario.String2Double(saldoInicial, SEP_MIL_FRANCES, SEP_DEC_FRANCES);
+					Double dblSaldoAnterior = CommonResumenBancario.String2Double(saldoInicial, ConstantesTool.SEP_MILES, ConstantesTool.SEP_DEC);
 
 					// retiro las 2 primeras lineas
 					String[] parts2 = new String[parts.length - 1];
@@ -64,43 +63,53 @@ public class AppOcrBBVA implements BancosInterface {
 					}
 
 					for (int i = 0; i < parts2.length; i++) {
-						// saco el blanco despues de la coma en el saldo
-						parts2[i] = parts2[i].replaceAll(", ", ",");
-						parts2[i] = parts2[i].replaceAll(" ,", ",");
-						parts2[i] = parts2[i].replaceAll(" \\.", ".");
-						String c = parts2[i];
-						
-						// separo fecha
-						StringBuffer sb = new StringBuffer(c);
-						sb.setCharAt(5, ';');
-						int finmovi = sb.lastIndexOf(" ");
-						sb.setCharAt(finmovi, ';');
-						int inimovi = sb.lastIndexOf(" ");
-						sb.setCharAt(inimovi, ';');
+						try {
+							// saco el blanco despues de la coma en el saldo
+							parts2[i] = parts2[i].replaceAll(", ", ",");
+							parts2[i] = parts2[i].replaceAll(" ,", ",");
+							parts2[i] = parts2[i].replaceAll(" \\.", ".");
+							String c = parts2[i];
 
-						String rengistroSplit[] = sb.toString().split(";");
-						// ya tengo el registro spliteado en registroSplit, de ahora sigo con ese
+							// separo fecha
+							StringBuffer sb = new StringBuffer(c);
+							sb.setCharAt(5, ';');
+							int finmovi = sb.lastIndexOf(" ");
+							sb.setCharAt(finmovi, ';');
+							int inimovi = sb.lastIndexOf(" ");
+							sb.setCharAt(inimovi, ';');
 
-						String saldoFinal = rengistroSplit[rengistroSplit.length - 1];
+							String rengistroSplit[] = sb.toString().split(";");
+							// ya tengo el registro spliteado en registroSplit, de ahora sigo con ese
 
-						double dblSaldoRenglon = CommonResumenBancario.String2Double(saldoFinal, SEP_MIL_FRANCES, SEP_DEC_FRANCES);
-						double dblValorMovimiento = CommonResumenBancario.String2Double(rengistroSplit[2], SEP_MIL_FRANCES, SEP_DEC_FRANCES);
+							String saldoFinal = rengistroSplit[rengistroSplit.length - 1];
 
-						String debito = "";
-						String credito = "";
-						if (dblSaldoRenglon > dblSaldoAnterior) {
-							// credito
-							credito = CommonUtils.double2String(dblValorMovimiento, Common.getGeneralSettings().getSeparadorMiles(),
-									Common.getGeneralSettings().getSeparadorDecimal());
+							double dblSaldoRenglon = CommonResumenBancario.String2Double(saldoFinal, ConstantesTool.SEP_MILES, ConstantesTool.SEP_DEC);
+							double dblValorMovimiento = CommonResumenBancario.String2Double(rengistroSplit[2], ConstantesTool.SEP_MILES, ConstantesTool.SEP_DEC);
 
-						} else { // debito
-							debito = CommonUtils.double2String(dblValorMovimiento, Common.getGeneralSettings().getSeparadorMiles(),
-									Common.getGeneralSettings().getSeparadorDecimal());
+							String debito = "";
+							String credito = "";
+							if (dblSaldoRenglon > dblSaldoAnterior) {
+								// credito
+								credito = CommonUtils.double2String(dblValorMovimiento, Common.getGeneralSettings().getSeparadorMiles(),
+										Common.getGeneralSettings().getSeparadorDecimal());
+
+							} else { // debito
+								debito = CommonUtils.double2String(dblValorMovimiento, Common.getGeneralSettings().getSeparadorMiles(),
+										Common.getGeneralSettings().getSeparadorDecimal());
+							}
+							dblSaldoAnterior = dblSaldoRenglon;
+
+							parts2[i] = String.format("%s;%s;%s;%s;%s", rengistroSplit[0], rengistroSplit[1], debito, credito,
+									CommonUtils.double2String(dblSaldoRenglon, Common.getGeneralSettings().getSeparadorMiles(), Common.getGeneralSettings().getSeparadorDecimal()));
+						} catch (Exception e) {
+							e.printStackTrace();
+							parts2[i - 1] = String.format(ConstantesTool.LEYENDA_FALLO, i);
+							try {
+								LogManager.getLogManager().logError(e);
+							} catch (Exception e2) {
+								e.printStackTrace();
+							}
 						}
-						dblSaldoAnterior = dblSaldoRenglon;
-
-						parts2[i] = String.format("%s;%s;%s;%s;%s", rengistroSplit[0], rengistroSplit[1], debito, credito,
-								CommonUtils.double2String(dblSaldoRenglon, Common.getGeneralSettings().getSeparadorMiles(), Common.getGeneralSettings().getSeparadorDecimal()));
 					}
 
 					StringJoiner sj = new StringJoiner("\n");
