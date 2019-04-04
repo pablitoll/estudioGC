@@ -9,6 +9,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import ar.com.rp.rpcutils.ExceptionUtils;
+
 public class LogManager {
 
 	private enum archivoLog {
@@ -104,7 +106,7 @@ public class LogManager {
 		}
 
 		if (error != null) {
-			msgError += "\n" + error.getStackTrace().toString();
+			msgError += "\n" + ExceptionUtils.exception2String(error);
 		}
 
 		//System.out.println(msgError);
