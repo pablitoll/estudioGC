@@ -9,6 +9,7 @@ import ar.com.tnba.utils.besumenesbancarios.business.ConstantesTool;
 import ar.com.tnba.utils.besumenesbancarios.business.LogManager;
 import net.sourceforge.lept4j.util.LoadLibs;
 import net.sourceforge.tess4j.ITesseract;
+import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.Tesseract1;
 
 public class AppOcrBNA implements BancosInterface {
@@ -152,7 +153,7 @@ public class AppOcrBNA implements BancosInterface {
 	}
 
 	private ITesseract getInstanceNacion(File archivoOCR) {
-		ITesseract instanceNacion = new Tesseract1(); // JNA Direct Mapping
+		Tesseract instanceNacion = new Tesseract(); // JNA Direct Mapping
 		instanceNacion.setTessVariable("preserve_interword_spaces", "1");
 		instanceNacion.setDatapath(archivoOCR.getParent() + File.separator + "temp\\tessdata"); // path to tessdata directory
 		File tessDataFolder = LoadLibs.extractNativeResources("tessdata");

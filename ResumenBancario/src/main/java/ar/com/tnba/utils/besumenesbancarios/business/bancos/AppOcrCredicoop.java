@@ -26,7 +26,7 @@ public class AppOcrCredicoop implements BancosInterface {
 		System.out.println("Procesando Crecicop: " + archivo.getName() + " Pagina " + pagina);
 		String strOcrFormateado = "";
 		try {
-			Integer vecMin[] = new Integer[2];
+			Integer vecMin[] = new Integer[3];
 
 			// inicio
 			int idxSaldoSaldoAnt_Inicio = strOcr.lastIndexOf(HEADER_SALTO);
@@ -34,19 +34,23 @@ public class AppOcrCredicoop implements BancosInterface {
 
 			vecMin[0] = idxSaldoSaldoAnt_Inicio;
 			vecMin[1] = idxSaldoFecha_Inicio;
+			vecMin[2] = -1;
 
 			Integer idxInicio = CommonUtils.maximo(vecMin);
 
 			// fin
 			int idxContinuaPagina_Fin = strOcr.lastIndexOf("CONTINUA EN PAGINA");
 			int idxContinuaSiguiente_Fin = strOcr.lastIndexOf("CONTINUA EN PAGINA SIGUIENTE >>>>>>");
+			int idxSaldoAl_Fin = strOcr.lastIndexOf("SALDO AL ");
+			
 
 			vecMin[0] = idxContinuaPagina_Fin == -1 ? ConstantesTool.NUMERO_ALTO : idxContinuaPagina_Fin;
 			vecMin[1] = idxContinuaSiguiente_Fin == -1 ? ConstantesTool.NUMERO_ALTO : idxContinuaSiguiente_Fin;
+			vecMin[2] = idxSaldoAl_Fin == -1 ? ConstantesTool.NUMERO_ALTO : idxSaldoAl_Fin;
 
 			Integer idxFinal = CommonUtils.minimo(vecMin);
 
-			if ((idxInicio != ConstantesTool.NUMERO_ALTO) && (idxFinal != ConstantesTool.NUMERO_ALTO) && (idxInicio < idxFinal)) {
+			if ((idxInicio != -1) && (idxFinal != ConstantesTool.NUMERO_ALTO) && (idxInicio < idxFinal)) {
 
 				strOcrFormateado = strOcr.substring(idxInicio, idxFinal);
 

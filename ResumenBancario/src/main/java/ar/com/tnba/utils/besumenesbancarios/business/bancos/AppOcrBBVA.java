@@ -10,6 +10,7 @@ import ar.com.tnba.utils.besumenesbancarios.business.ConstantesTool;
 import ar.com.tnba.utils.besumenesbancarios.business.LogManager;
 import net.sourceforge.lept4j.util.LoadLibs;
 import net.sourceforge.tess4j.ITesseract;
+import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.Tesseract1;
 
 public class AppOcrBBVA implements BancosInterface {
@@ -155,7 +156,7 @@ public class AppOcrBBVA implements BancosInterface {
 	}
 
 	private ITesseract getInstanceFrances(File archivoOCR) {
-		Tesseract1 instanceFrances = new Tesseract1(); // JNA Direct Mapping
+		Tesseract instanceFrances = new Tesseract(); // JNA Direct Mapping
 		instanceFrances.setDatapath(archivoOCR.getParent() + File.separator + "temp\\tessdata"); // path to tessdata directory
 		File tessDataFolder = LoadLibs.extractNativeResources("tessdata");
 		instanceFrances.setDatapath(tessDataFolder.getAbsolutePath());
