@@ -9,7 +9,6 @@ import ar.com.tnba.utils.besumenesbancarios.business.ConstantesTool;
 import ar.com.tnba.utils.besumenesbancarios.business.LogManager;
 import net.sourceforge.lept4j.util.LoadLibs;
 import net.sourceforge.tess4j.ITesseract;
-import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.Tesseract1;
 
 public class AppOcrBNA implements BancosInterface {

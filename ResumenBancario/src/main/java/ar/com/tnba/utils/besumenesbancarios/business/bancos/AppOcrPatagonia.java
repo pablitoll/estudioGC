@@ -1,6 +1,8 @@
 package ar.com.tnba.utils.besumenesbancarios.business.bancos;
 
 import java.io.File;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import ar.com.rp.rpcutils.CommonUtils;
 import ar.com.tnba.utils.besumenesbancarios.business.CommonResumenBancario;
@@ -10,45 +12,44 @@ import net.sourceforge.lept4j.util.LoadLibs;
 import net.sourceforge.tess4j.ITesseract;
 import net.sourceforge.tess4j.Tesseract1;
 
-public class AppOcrCredicoop implements BancosInterface {
+public class AppOcrPatagonia implements BancosInterface {
 
-	private static final int POS_FIN_DES = 56;
-	private static final int POS_FIN_DEBITO = 76;
-	private static final int POS_FIN_CREDITO = 93;
-	private static final int POS_FIN_TOTAL = 112;
+	private static final int POS_FIN_DES = 40;
+	private static final int POS_FIN_DEBITO = 80;
+	private static final int POS_FIN_CREDITO = 100;
+	private static final int POS_FIN_TOTAL = 120;
 	private static final int POS_FIN_FECHA = 8;
-	private static final int POS_FIN_COMP = 15;
-	private static final String HEADER_FECHA = "FECHA   COMBTE              DESCRIPCION                        DEBITO            CREDITO             SALDO";
-	private static final String HEADER_SALTO = "SALDO ANTERIOR";
+	private static final int POS_FIN_COMP = 62;
+	private static final String HEADER_FECHA = "FECHA[ ]+CONCEPTO[ ]+REFER\\.[ ]+FECHA[ ]+VALOR[ ]+DEBITOS[ ]+CREDITOS[ ]+SALDO";
+	private Pattern patternHeaderFecha = Pattern.compile(HEADER_FECHA);
+	private String espacios = "";
+
 	private static final Double SALDO_TOTAL_NO_VALIDO = 9999998.11;
+	private static final String FOOTER_SALDO = "SALDO ACTUAL";
+	private static final String FOOTER_FIN = "Si usted reviste el caracter de consumidor final, no responsable o exento frente al IVA,";
+	private static final String SALDO_ANTERIOR = "SALDO ANTERIOR";
 
 	@Override
 	public String procesarArchivo(String strOcr, File archivo, Integer pagina) throws Exception {
-		System.out.println("Procesando Crecicop: " + archivo.getName() + " Pagina " + pagina);
+		System.out.println("Procesando Patagonia: " + archivo.getName() + " Pagina " + pagina);
 		String strOcrFormateado = "";
 		try {
 
-			Integer vecMax[] = new Integer[2];
 			// inicio
-			int idxSaldoSaldoAnt_Inicio = strOcr.lastIndexOf(HEADER_SALTO);
-			int idxSaldoFecha_Inicio = strOcr.lastIndexOf(HEADER_FECHA);
-
-			vecMax[0] = idxSaldoSaldoAnt_Inicio;
-			vecMax[1] = idxSaldoFecha_Inicio;
-
-			Integer idxInicio = CommonUtils.maximo(vecMax);
+			// int idxInicio = strOcr.lastIndexOf(HEADER_FECHA);
+			Matcher m = patternHeaderFecha.matcher(strOcr);
+			int idxInicio = -1;
+			if (m.find()) {
+				idxInicio = m.end();
+			}
 
 			// fin
-			Integer vecMin[] = new Integer[4];
-			int idxContinuaPagina_Fin = strOcr.lastIndexOf("CONTINUA EN PAGINA");
-			int idxContinuaSiguiente_Fin = strOcr.lastIndexOf("CONTINUA EN PAGINA SIGUIENTE >>>>>>");
-			int idxSaldoAl_Fin = strOcr.lastIndexOf("SALDO AL ");
-			int idxPersibido_Fin = strOcr.indexOf("PERCIBIDO DEL ");
+			Integer vecMin[] = new Integer[2];
+			int idxSaldo_Fin = strOcr.indexOf(FOOTER_SALDO);
+			int idxFin_Fin = strOcr.indexOf(FOOTER_FIN);
 
-			vecMin[0] = idxContinuaPagina_Fin == -1 ? ConstantesTool.NUMERO_ALTO : idxContinuaPagina_Fin;
-			vecMin[1] = idxContinuaSiguiente_Fin == -1 ? ConstantesTool.NUMERO_ALTO : idxContinuaSiguiente_Fin;
-			vecMin[2] = idxSaldoAl_Fin == -1 ? ConstantesTool.NUMERO_ALTO : idxSaldoAl_Fin;
-			vecMin[3] = idxPersibido_Fin == -1 ? ConstantesTool.NUMERO_ALTO : idxPersibido_Fin;
+			vecMin[0] = idxSaldo_Fin == -1 ? ConstantesTool.NUMERO_ALTO : idxSaldo_Fin;
+			vecMin[1] = idxFin_Fin == -1 ? ConstantesTool.NUMERO_ALTO : idxFin_Fin;
 
 			Integer idxFinal = CommonUtils.minimo(vecMin);
 
@@ -66,32 +67,22 @@ public class AppOcrCredicoop implements BancosInterface {
 				Double saldoInicial = SALDO_TOTAL_NO_VALIDO;
 
 				for (int i = 0; i < parts.length; i++) {
-					if (parts[i].contains(HEADER_FECHA)) {
+					if (parts[i].contains(HEADER_FECHA) || parts[i].contains(FOOTER_SALDO) || (parts[i].length() < POS_FIN_DES)) {
 						parts[i] = "";
 					} else {
-						if (parts[i].contains(HEADER_SALTO)) {
-							String reg[] = parts[i].split(HEADER_SALTO);
+						if (parts[i].contains(SALDO_ANTERIOR)) {
+							String reg[] = parts[i].split(SALDO_ANTERIOR);
 							saldoInicial = CommonResumenBancario.String2Double(reg[reg.length - 1], ConstantesTool.SEP_MILES, ConstantesTool.SEP_DEC);
 							parts[i] = "";
 						} else {
-							if (parts[i].length() <= POS_FIN_DES) {
-								if ((i > 0) && !parts[i - 1].equals("")) {
-									// es la segunda parte de la descripcion del renglon anterior
-									parts[i - 1] = insrtarSeparador(parts[i - 1], POS_FIN_DES + 2, parts[i]);
-									parts[i] = "";
-								} else {
-									parts[i] = "";
-								}
-							} else {
-								parts[i] = parts[i] + "                                                                                                "; // no esta bien pero
-																																							// bueno,anda
-								parts[i] = insrtarSeparador(parts[i], POS_FIN_FECHA);
-								parts[i] = insrtarSeparador(parts[i], POS_FIN_COMP + 1);
-								parts[i] = insrtarSeparador(parts[i], POS_FIN_DES + 2);
-								parts[i] = insrtarSeparador(parts[i], POS_FIN_DEBITO + 3);
-								parts[i] = insrtarSeparador(parts[i], POS_FIN_CREDITO + 4);
-								parts[i] = insrtarSeparador(parts[i], POS_FIN_TOTAL + 5);
-							}
+							parts[i] = parts[i] + getEspacios(); // no esta bien pero bueno,anda
+							parts[i] = insrtarSeparador(parts[i], POS_FIN_FECHA);
+							parts[i] = insrtarSeparador(parts[i], POS_FIN_DES + 1);
+							parts[i] = insrtarSeparador(parts[i], POS_FIN_COMP + 2);
+							parts[i] = insrtarSeparador(parts[i], POS_FIN_DEBITO + 3);
+							parts[i] = insrtarSeparador(parts[i], POS_FIN_CREDITO + 4);
+							parts[i] = insrtarSeparador(parts[i], POS_FIN_TOTAL + 5);
+
 						}
 					}
 				}
@@ -131,6 +122,15 @@ public class AppOcrCredicoop implements BancosInterface {
 			e.printStackTrace();
 			throw (e);
 		}
+	}
+
+	private String getEspacios() {
+		if (espacios.equals("")) {
+			for (int i = 0; i < 500; i++) {
+				espacios += " ";
+			}
+		}
+		return espacios;
 	}
 
 	private String armarRegistroTrim(String registro) {
@@ -212,15 +212,15 @@ public class AppOcrCredicoop implements BancosInterface {
 	@Override
 	public String getOCR(File archivoOCR) throws Exception {
 		System.out.println("Procesando OCR: " + archivoOCR.getName());
-		return getInstanceCrediccop(archivoOCR).doOCR(archivoOCR);
+		return getInstancePatagonia(archivoOCR).doOCR(archivoOCR);
 	}
 
-	private ITesseract getInstanceCrediccop(File archivoOCR) {
-		ITesseract instanceCrediccop = new Tesseract1(); // JNA Direct Mapping
-		instanceCrediccop.setTessVariable("preserve_interword_spaces", "1");
-		instanceCrediccop.setDatapath(archivoOCR.getParent() + File.separator + "temp\\tessdata"); // path to tessdata directory
+	private ITesseract getInstancePatagonia(File archivoOCR) {
+		ITesseract instancePatagonia = new Tesseract1(); // JNA Direct Mapping
+		instancePatagonia.setTessVariable("preserve_interword_spaces", "1");
+		instancePatagonia.setDatapath(archivoOCR.getParent() + File.separator + "temp\\tessdata"); // path to tessdata directory
 		File tessDataFolder = LoadLibs.extractNativeResources("tessdata");
-		instanceCrediccop.setDatapath(tessDataFolder.getAbsolutePath());
-		return instanceCrediccop;
+		instancePatagonia.setDatapath(tessDataFolder.getAbsolutePath());
+		return instancePatagonia;
 	}
 }

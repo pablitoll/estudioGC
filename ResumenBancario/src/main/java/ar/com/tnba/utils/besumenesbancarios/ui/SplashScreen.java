@@ -1,5 +1,6 @@
 package ar.com.tnba.utils.besumenesbancarios.ui;
 
+import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.EventQueue;
@@ -16,7 +17,6 @@ import com.alee.extended.image.WebImage;
 import ar.com.rp.rpcutils.CommonUtils;
 import ar.com.tnba.utils.besumenesbancarios.business.ArchivoDePropiedadesBusiness;
 import ar.com.tnba.utils.besumenesbancarios.business.ConstantesTool;
-import java.awt.BorderLayout;
 
 public class SplashScreen extends JWindow {
 

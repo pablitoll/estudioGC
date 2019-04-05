@@ -5,7 +5,10 @@ public class BancosBusiness {
 	public enum Bancos {
 		BancoNacion("00011", "BancoNacion", "BANCO DE LA NACION ARGENTINA", 11, "AppOcrBNA"), 
 		BancoFrances("00017", "BancoFrances", "BBVA BANCO FRANCES S.A.", 17,"AppOcrBBVA"),
-		ICBC("00015", "BancoICBC", "INDUSTRIAL AND COMMERCIAL BANK OF CHINA (ICBC)", 15, "AppOcrICBC"), CREDICOOP("00191", "BancoCrediccop", "BANCO CREDICOOP COOPERATIVO LIMITADO", 191, "AppOcrCredicoop");
+		ICBC("00015", "BancoICBC", "INDUSTRIAL AND COMMERCIAL BANK OF CHINA (ICBC)", 15, "AppOcrICBC"), 
+		CREDICOOP("00191", "BancoCrediccop", "BANCO CREDICOOP COOPERATIVO LIMITADO", 191, "AppOcrCredicoop"),
+		PATAGONIA("00034", "BancoPatagonia", "BANCO PATAGONIA S.A.", 64, "AppOcrPatagonia");
+		
 
 		private String codigo;
 		private String directorio;
