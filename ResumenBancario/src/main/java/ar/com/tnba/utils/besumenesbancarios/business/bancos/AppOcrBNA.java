@@ -153,7 +153,7 @@ public class AppOcrBNA implements BancosInterface {
 	}
 
 	private ITesseract getInstanceNacion(File archivoOCR) {
-		Tesseract instanceNacion = new Tesseract(); // JNA Direct Mapping
+		ITesseract instanceNacion = new Tesseract1(); // JNA Direct Mapping
 		instanceNacion.setTessVariable("preserve_interword_spaces", "1");
 		instanceNacion.setDatapath(archivoOCR.getParent() + File.separator + "temp\\tessdata"); // path to tessdata directory
 		File tessDataFolder = LoadLibs.extractNativeResources("tessdata");
