@@ -11,7 +11,7 @@ import net.sourceforge.tess4j.Tesseract1;
 
 public class AppOcrCredicoop implements BancosInterface {
 
-	private static final int POS_FIN_DES = 55;
+	private static final int POS_FIN_DES = 56;
 	private static final int POS_FIN_DEBITO = 76;
 	private static final int POS_FIN_CREDITO = 93;
 	private static final int POS_FIN_TOTAL = 112;
@@ -26,27 +26,28 @@ public class AppOcrCredicoop implements BancosInterface {
 		System.out.println("Procesando Crecicop: " + archivo.getName() + " Pagina " + pagina);
 		String strOcrFormateado = "";
 		try {
-			Integer vecMin[] = new Integer[3];
 
+			Integer vecMax[] = new Integer[2];
 			// inicio
 			int idxSaldoSaldoAnt_Inicio = strOcr.lastIndexOf(HEADER_SALTO);
 			int idxSaldoFecha_Inicio = strOcr.lastIndexOf(HEADER_FECHA);
 
-			vecMin[0] = idxSaldoSaldoAnt_Inicio;
-			vecMin[1] = idxSaldoFecha_Inicio;
-			vecMin[2] = -1;
+			vecMax[0] = idxSaldoSaldoAnt_Inicio;
+			vecMax[1] = idxSaldoFecha_Inicio;
 
-			Integer idxInicio = CommonUtils.maximo(vecMin);
+			Integer idxInicio = CommonUtils.maximo(vecMax);
 
 			// fin
+			Integer vecMin[] = new Integer[4];
 			int idxContinuaPagina_Fin = strOcr.lastIndexOf("CONTINUA EN PAGINA");
 			int idxContinuaSiguiente_Fin = strOcr.lastIndexOf("CONTINUA EN PAGINA SIGUIENTE >>>>>>");
 			int idxSaldoAl_Fin = strOcr.lastIndexOf("SALDO AL ");
-			
+			int idxPersibido_Fin = strOcr.indexOf("PERCIBIDO DEL ");
 
 			vecMin[0] = idxContinuaPagina_Fin == -1 ? ConstantesTool.NUMERO_ALTO : idxContinuaPagina_Fin;
 			vecMin[1] = idxContinuaSiguiente_Fin == -1 ? ConstantesTool.NUMERO_ALTO : idxContinuaSiguiente_Fin;
 			vecMin[2] = idxSaldoAl_Fin == -1 ? ConstantesTool.NUMERO_ALTO : idxSaldoAl_Fin;
+			vecMin[3] = idxPersibido_Fin == -1 ? ConstantesTool.NUMERO_ALTO : idxPersibido_Fin;
 
 			Integer idxFinal = CommonUtils.minimo(vecMin);
 
@@ -81,7 +82,8 @@ public class AppOcrCredicoop implements BancosInterface {
 									parts[i] = "";
 								}
 							} else {
-								parts[i] = parts[i] + "                                                "; // no esta bien pero bueno,anda
+								parts[i] = parts[i] + "                                                                                                "; // no esta bien pero
+																																							// bueno,anda
 								parts[i] = insrtarSeparador(parts[i], POS_FIN_FECHA);
 								parts[i] = insrtarSeparador(parts[i], POS_FIN_COMP + 1);
 								parts[i] = insrtarSeparador(parts[i], POS_FIN_DES + 2);
@@ -104,7 +106,12 @@ public class AppOcrCredicoop implements BancosInterface {
 							saldoInicial = darValorSubTotal(registro);
 						} catch (Exception e) {
 							e.printStackTrace();
-							part2.append(String.format(ConstantesTool.LEYENDA_FALLO, i + 1) + "\n");
+							String errorSubtotal = "";
+							if (e instanceof ExceptionSubTotal) {
+								errorSubtotal = "Error en el Caclulo del Subtotal - ";
+							}
+							part2.append(armarRegistroTrim(parts[i]) + errorSubtotal + String.format(ConstantesTool.LEYENDA_FALLO, i + 1) + "\n");
+							saldoInicial = SALDO_TOTAL_NO_VALIDO; // Si falla no puedo garantizar el contador
 							try {
 								LogManager.getLogManager().logError(e);
 							} catch (Exception e2) {
@@ -125,6 +132,15 @@ public class AppOcrCredicoop implements BancosInterface {
 		}
 	}
 
+	private String armarRegistroTrim(String registro) {
+		String reg[] = registro.split(";");
+		String resultado = "";
+		for (String aux : reg) {
+			resultado += aux.trim() + ";";
+		}
+		return resultado;
+	}
+
 	private String insrtarSeparador(String valor, int pos, String cadena) {
 		return valor.substring(0, pos) + cadena + valor.substring(pos, valor.length());
 	}
@@ -135,7 +151,7 @@ public class AppOcrCredicoop implements BancosInterface {
 
 	private Double darValorSubTotal(String registro) throws Exception {
 		String reg[] = registro.split(";");
-		//Si termina en ;, es porque no esta la ultima columna (la de saldo)
+		// Si termina en ;, es porque no esta la ultima columna (la de saldo)
 		if (!registro.substring(registro.length() - 1).equals(";") && !reg[reg.length - 1].trim().equals("")) {
 			return CommonResumenBancario.String2Double(reg[reg.length - 1].trim(), ConstantesTool.SEP_MILES, ConstantesTool.SEP_DEC);
 		}
@@ -182,7 +198,7 @@ public class AppOcrCredicoop implements BancosInterface {
 
 				// Solo valido aca, porque en el caso anterior no tengo el saldo inical
 				if ((valorSubTotal != SALDO_TOTAL_NO_VALIDO) && (Math.abs(valorSubTotal - nuevoTotal) >= 1.0)) {
-					throw new Exception("No coincide el subtotal");
+					throw new ExceptionSubTotal("No coincide el subtotal");
 				}
 			}
 
@@ -195,15 +211,15 @@ public class AppOcrCredicoop implements BancosInterface {
 	@Override
 	public String getOCR(File archivoOCR) throws Exception {
 		System.out.println("Procesando OCR: " + archivoOCR.getName());
-		return getInstanceICBC(archivoOCR).doOCR(archivoOCR);
+		return getInstanceCrediccop(archivoOCR).doOCR(archivoOCR);
 	}
 
-	private ITesseract getInstanceICBC(File archivoOCR) {
-		ITesseract instanceNacion = new Tesseract1(); // JNA Direct Mapping
-		instanceNacion.setTessVariable("preserve_interword_spaces", "1");
-		instanceNacion.setDatapath(archivoOCR.getParent() + File.separator + "temp\\tessdata"); // path to tessdata directory
+	private ITesseract getInstanceCrediccop(File archivoOCR) {
+		ITesseract instanceCrediccop = new Tesseract1(); // JNA Direct Mapping
+		instanceCrediccop.setTessVariable("preserve_interword_spaces", "1");
+		instanceCrediccop.setDatapath(archivoOCR.getParent() + File.separator + "temp\\tessdata"); // path to tessdata directory
 		File tessDataFolder = LoadLibs.extractNativeResources("tessdata");
-		instanceNacion.setDatapath(tessDataFolder.getAbsolutePath());
-		return instanceNacion;
+		instanceCrediccop.setDatapath(tessDataFolder.getAbsolutePath());
+		return instanceCrediccop;
 	}
 }

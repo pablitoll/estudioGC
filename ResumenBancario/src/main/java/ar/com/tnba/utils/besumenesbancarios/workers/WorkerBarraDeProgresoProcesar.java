@@ -50,6 +50,9 @@ public class WorkerBarraDeProgresoProcesar extends WorkerBarraDeProgresoBase imp
 			avanzarbBarra(chunk);
 			while (nroHoja <= listaARchivoOCR.size() && !cancelar) {
 
+				// TODO SACAR
+//				 if(nroHoja == 3) {
+
 				if (hayHiloLibre()) {
 					File archivoOCR = listaARchivoOCR.get(nroHoja - 1);
 					pantalla.setTitle(String.format("%s - %s - %s Hojas", archivoProcesar.getBanco().getNombre(), archivoProcesar.getNombreArchivo(), listaARchivoOCR.size()));
@@ -63,6 +66,8 @@ public class WorkerBarraDeProgresoProcesar extends WorkerBarraDeProgresoBase imp
 				} else {
 					wait(4000);
 				}
+//				 }
+//				 nroHoja++;
 			}
 
 			i++;

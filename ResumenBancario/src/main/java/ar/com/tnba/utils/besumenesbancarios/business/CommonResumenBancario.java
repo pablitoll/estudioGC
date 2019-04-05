@@ -23,7 +23,13 @@ public class CommonResumenBancario {
 	}
 
 	public static Double String2Double(String valor, String sepMiles, String sepDec) throws Exception {
-		valor = valor.replaceAll(" ", "").replaceAll(" .", ".").replaceAll(" ,", ",").replaceAll("\\.", "").replaceAll("\\,", "");
+		valor = valor.replaceAll(" ", "").replaceAll(" .", ".").replaceAll(" ,", ",");
+		if((valor.indexOf(sepDec) != -1) && (valor.length() - valor.indexOf(sepDec) > 3)) {
+			//Entro si vienen mas de dos decimales
+			valor = valor.substring(0, valor.indexOf(sepDec) + 3);
+		}
+		
+		valor = valor.replaceAll("\\.", "").replaceAll("\\,", "");
 		valor = valor.substring(0, valor.length() - 2) + sepDec + CommonUtils.strRigth(valor, 2);
 		return CommonUtils.String2Double(valor, sepMiles, sepDec);
 	}
