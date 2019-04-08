@@ -1,23 +1,16 @@
 package ar.com.tnba.utils.besumenesbancarios.business.bancos;
 
 import java.io.File;
-import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ar.com.rp.rpcutils.CommonUtils;
-import ar.com.tnba.utils.besumenesbancarios.business.CommonResumenBancario;
-import ar.com.tnba.utils.besumenesbancarios.business.ConstantesTool;
-import ar.com.tnba.utils.besumenesbancarios.business.LogManager;
 import ar.com.tnba.utils.besumenesbancarios.business.bancos.BancosBusiness.Bancos;
-import net.sourceforge.lept4j.util.LoadLibs;
-import net.sourceforge.tess4j.ITesseract;
-import net.sourceforge.tess4j.Tesseract1;
 
 public class AppOcrICBC extends BaseBancos {
 
 	public AppOcrICBC() {
-		super(Bancos.);
+		super(Bancos.ICBC);
 	}
 
 	private static final String REG_EXP_VISA = "[0123456789]{4,9}[ ]+[0123456789]{4,10}";
@@ -101,7 +94,7 @@ public class AppOcrICBC extends BaseBancos {
 
 			// Saldo inicial
 			String regZero[] = parts[0].split(";");
-			saldoInicial = AppOcrICBC.String2Double(regZero[regZero.length - 1], SEP_MILES, SEP_DEC);
+			saldoInicial = String2Double(regZero[regZero.length - 1], SEP_MILES, SEP_DEC);
 			parts[0] = "";
 
 			for (int i = 1; i < parts.length; i++) {
@@ -116,54 +109,18 @@ public class AppOcrICBC extends BaseBancos {
 
 	@Override
 	protected String armarRegistro(String registro, Double saldoInicial) throws Exception {
-		// TODO Auto-generated method stub
-
-		String[] parts2 = new String[parts.length - 1];
-		Double saldoInicial = getSaldoInicial(parts[0]);
-
-		// parts tiene el formato fecha;desc;numero;valor;saldo
-		for (int i = 1; i < parts.length; i++) {
-			try {
-				parts2[i - 1] = armarRegistro(parts[i], saldoInicial);
-				saldoInicial += darvalorOperacion(parts[i], saldoInicial);
-			} catch (Exception e) {
-				e.printStackTrace();
-				parts2[i - 1] = String.format(ConstantesTool.LEYENDA_FALLO, i + 1);
-				try {
-					LogManager.getLogManager().logError(e);
-				} catch (Exception e2) {
-					e.printStackTrace();
-				}
-			}
-		}
-		StringJoiner sj = new StringJoiner("\n");
-		for (String s : parts2) {
-			sj.add(s);
-		}
-		strOcrFormateado = sj.toString();
-
-		return strOcrFormateado;
-	}
-
-	private Double darvalorOperacion(String registro, Double saldoInicial) throws Exception {
 		String reg[] = registro.split(";");
+		String strSaldo = "";
 
-		Double valor = AppOcrICBC.String2Double(reg[reg.length - 1], SEP_MILES, SEP_DEC);
-		if (isDouble(reg[reg.length - 2])) {
-			valor = AppOcrICBC.String2Double(reg[reg.length - 2], SEP_MILES, SEP_DEC);
-		}
-
-		return valor;
-	}
-
-	private String armarRegistro(String registro, Double saldoInicial) throws Exception {
-		String reg[] = registro.split(";");
-
-		Double valor = AppOcrICBC.String2Double(reg[reg.length - 1], SEP_MILES, SEP_DEC);
+		Double valor = String2Double(reg[reg.length - 1], SEP_MILES, SEP_DEC);
 		Double subTotal = 0.0;
 		if (isDouble(reg[reg.length - 2])) {
-			valor = AppOcrICBC.String2Double(reg[reg.length - 2], SEP_MILES, SEP_DEC);
-			subTotal = AppOcrICBC.String2Double(reg[reg.length - 1], SEP_MILES, SEP_DEC);
+			valor = String2Double(reg[reg.length - 2], SEP_MILES, SEP_DEC);
+			subTotal = String2Double(reg[reg.length - 1], SEP_MILES, SEP_DEC);
+
+			if (saldoInicial == SALDO_TOTAL_NO_VALIDO) {
+				saldoInicial = subTotal - valor;
+			}
 		}
 
 		String debito = CommonUtils.double2String(valor, SEP_MILES, SEP_DEC);
@@ -174,22 +131,35 @@ public class AppOcrICBC extends BaseBancos {
 			debito = "";
 		}
 
-		String strSaldo = CommonUtils.double2String(valor + saldoInicial, SEP_MILES, SEP_DEC);
+		if (saldoInicial != SALDO_TOTAL_NO_VALIDO) {
 
-		if (subTotal != 0) {
-			if (subTotal != (valor + saldoInicial)) {
-				throw new Exception("Error de subTotales");
+			if (subTotal != 0) {
+				if (Math.abs(subTotal - (valor + saldoInicial)) >= 1.0) {
+					throw new ExceptionSubTotal();
+				}
 			}
-		}
 
+			strSaldo = CommonUtils.double2String(valor + saldoInicial, SEP_MILES, SEP_DEC);
+		}
 		return String.format("%s;%s;%s;%s;%s;%s", reg[0], reg[1], reg[2], debito, credito, strSaldo);
 	}
 
-	private static Double String2Double(String valor, String sepMiles, String sepDec) throws Exception {
+	protected Double darSaldoSubTotal(String registro) throws Exception {
+		String reg[] = registro.split(";");
+
+		if ((reg.length == 6) &&  !reg[reg.length - 1].trim().equals("")) {
+			return String2Double(reg[reg.length - 1], SEP_MILES, SEP_DEC);
+		}
+
+		return SALDO_TOTAL_NO_VALIDO;
+	}
+
+	@Override
+	protected Double String2Double(String valor, String sepMiles, String sepDec) throws Exception {
 		if (valor.substring(valor.length() - 1).equals("-")) {
 			valor = "-" + valor.substring(0, valor.length() - 1);
 		}
-		return String2Double(valor, sepMiles, sepDec);
+		return super.String2Double(valor, sepMiles, sepDec);
 	}
 
 	private boolean isDouble(String valor) {
@@ -200,24 +170,4 @@ public class AppOcrICBC extends BaseBancos {
 		return valor.matches("\\d*\\.\\d+[-+]?");
 	}
 
-	@Override
-	public String getOCR(File archivoOCR) throws Exception {
-		System.out.println("Procesando OCR: " + archivoOCR.getName());
-		return getInstanceICBC(archivoOCR).doOCR(archivoOCR);
-	}
-
-	private ITesseract getInstanceICBC(File archivoOCR) {
-		ITesseract instanceNacion = new Tesseract1(); // JNA Direct Mapping
-		instanceNacion.setTessVariable("preserve_interword_spaces", "1");
-		instanceNacion.setDatapath(archivoOCR.getParent() + File.separator + "temp\\tessdata"); // path to tessdata directory
-		File tessDataFolder = LoadLibs.extractNativeResources("tessdata");
-		instanceNacion.setDatapath(tessDataFolder.getAbsolutePath());
-		return instanceNacion;
-	}
-
-	@Override
-	protected Double darSaldoSubTotal(String registro) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
-	}
 }

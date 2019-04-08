@@ -119,6 +119,7 @@ public abstract class BaseBancos {
 
 		valor = valor.replaceAll("\\.", "").replaceAll("\\,", "");
 		valor = valor.substring(0, valor.length() - 2) + sepDec + CommonUtils.strRigth(valor, 2);
+		
 		return CommonUtils.String2Double(valor, sepMiles, sepDec);
 	}
 }

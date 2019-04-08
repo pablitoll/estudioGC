@@ -13,7 +13,9 @@ public class BancosBusiness {
 	// "AppOcrPatagonia");
 	//
 	public enum Bancos {
-		PATAGONIA("00034", "BancoPatagonia", "BANCO PATAGONIA S.A.", 64, AppOcrPatagonia.class);
+		ICBC("00015", "BancoICBC", "INDUSTRIAL AND COMMERCIAL BANK OF CHINA (ICBC)", 15, AppOcrICBC.class), 
+		PATAGONIA("00034", "BancoPatagonia", "BANCO PATAGONIA S.A.", 64,
+				AppOcrPatagonia.class);
 
 		private String codigo;
 		private String directorio;
