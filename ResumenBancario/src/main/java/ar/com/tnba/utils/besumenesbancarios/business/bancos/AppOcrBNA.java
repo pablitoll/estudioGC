@@ -105,7 +105,7 @@ public class AppOcrBNA implements BancosInterface {
 	private Double darvalorOperacion(String registro, Double saldoInicial) throws Exception {
 		String reg[] = registro.split(";");
 
-		Double valor = CommonResumenBancario.String2Double(reg[3], ConstantesTool.SEP_MILES, ConstantesTool.SEP_DEC);
+		Double valor = String2Double(reg[3], SEP_MILES, SEP_DEC);
 
 		if (isCredito(registro, saldoInicial)) {
 			return valor;
@@ -116,11 +116,11 @@ public class AppOcrBNA implements BancosInterface {
 
 	private String armarRegistro(String registro, Double saldoInicial) throws Exception {
 		String reg[] = registro.split(";");
-		Double saldo = CommonResumenBancario.String2Double(reg[4], ConstantesTool.SEP_MILES, ConstantesTool.SEP_DEC);
-		String strSaldo = CommonUtils.double2String(saldo, ConstantesTool.SEP_MILES, ConstantesTool.SEP_DEC);
+		Double saldo = String2Double(reg[4], SEP_MILES, SEP_DEC);
+		String strSaldo = CommonUtils.double2String(saldo, SEP_MILES, SEP_DEC);
 
-		Double valorReg = CommonResumenBancario.String2Double(reg[3], ConstantesTool.SEP_MILES, ConstantesTool.SEP_DEC);
-		String strvalorReg = CommonUtils.double2String(valorReg, ConstantesTool.SEP_MILES, ConstantesTool.SEP_DEC);
+		Double valorReg = String2Double(reg[3], SEP_MILES, SEP_DEC);
+		String strvalorReg = CommonUtils.double2String(valorReg, SEP_MILES, SEP_DEC);
 
 		String debito = strvalorReg;
 		String credito = "";
@@ -135,14 +135,14 @@ public class AppOcrBNA implements BancosInterface {
 	private boolean isCredito(String registro, Double saldoInicial) throws Exception {
 		String reg[] = registro.split(";");
 
-		Double saldo = CommonResumenBancario.String2Double(reg[4], ConstantesTool.SEP_MILES, ConstantesTool.SEP_DEC);
+		Double saldo = String2Double(reg[4], SEP_MILES, SEP_DEC);
 
 		return (saldo > saldoInicial);
 	}
 
 	private Double getSaldoInicial(String registro) throws Exception {
 		String reg[] = registro.split(";");
-		return CommonResumenBancario.String2Double(reg[reg.length - 1], ConstantesTool.SEP_MILES, ConstantesTool.SEP_DEC);
+		return String2Double(reg[reg.length - 1], SEP_MILES, SEP_DEC);
 	}
 
 	@Override

@@ -45,14 +45,14 @@ public class AppOcrCredicoop implements BancosInterface {
 			int idxSaldoAl_Fin = strOcr.lastIndexOf("SALDO AL ");
 			int idxPersibido_Fin = strOcr.indexOf("PERCIBIDO DEL ");
 
-			vecMin[0] = idxContinuaPagina_Fin == -1 ? ConstantesTool.NUMERO_ALTO : idxContinuaPagina_Fin;
-			vecMin[1] = idxContinuaSiguiente_Fin == -1 ? ConstantesTool.NUMERO_ALTO : idxContinuaSiguiente_Fin;
-			vecMin[2] = idxSaldoAl_Fin == -1 ? ConstantesTool.NUMERO_ALTO : idxSaldoAl_Fin;
-			vecMin[3] = idxPersibido_Fin == -1 ? ConstantesTool.NUMERO_ALTO : idxPersibido_Fin;
+			vecMin[0] = idxContinuaPagina_Fin == -1 ? NUMERO_ALTO : idxContinuaPagina_Fin;
+			vecMin[1] = idxContinuaSiguiente_Fin == -1 ? NUMERO_ALTO : idxContinuaSiguiente_Fin;
+			vecMin[2] = idxSaldoAl_Fin == -1 ? NUMERO_ALTO : idxSaldoAl_Fin;
+			vecMin[3] = idxPersibido_Fin == -1 ? NUMERO_ALTO : idxPersibido_Fin;
 
 			Integer idxFinal = CommonUtils.minimo(vecMin);
 
-			if ((idxInicio != -1) && (idxFinal != ConstantesTool.NUMERO_ALTO) && (idxInicio < idxFinal)) {
+			if ((idxInicio != -1) && (idxFinal != NUMERO_ALTO) && (idxInicio < idxFinal)) {
 
 				strOcrFormateado = strOcr.substring(idxInicio, idxFinal);
 
@@ -71,7 +71,7 @@ public class AppOcrCredicoop implements BancosInterface {
 					} else {
 						if (parts[i].contains(HEADER_SALTO)) {
 							String reg[] = parts[i].split(HEADER_SALTO);
-							saldoInicial = CommonResumenBancario.String2Double(reg[reg.length - 1], ConstantesTool.SEP_MILES, ConstantesTool.SEP_DEC);
+							saldoInicial = String2Double(reg[reg.length - 1], SEP_MILES, SEP_DEC);
 							parts[i] = "";
 						} else {
 							if (parts[i].length() <= POS_FIN_DES) {
@@ -154,7 +154,7 @@ public class AppOcrCredicoop implements BancosInterface {
 		String reg[] = registro.split(";");
 		// Si termina en ;, es porque no esta la ultima columna (la de saldo)
 		if (!registro.substring(registro.length() - 1).equals(";") && !reg[reg.length - 1].trim().equals("")) {
-			return CommonResumenBancario.String2Double(reg[reg.length - 1].trim(), ConstantesTool.SEP_MILES, ConstantesTool.SEP_DEC);
+			return String2Double(reg[reg.length - 1].trim(), SEP_MILES, SEP_DEC);
 		}
 
 		return SALDO_TOTAL_NO_VALIDO;
@@ -171,21 +171,21 @@ public class AppOcrCredicoop implements BancosInterface {
 
 		if (!reg[5].trim().equals("")) {
 			// es total
-			valorSubTotal = CommonResumenBancario.String2Double(reg[5].trim(), ConstantesTool.SEP_MILES, ConstantesTool.SEP_DEC);
+			valorSubTotal = String2Double(reg[5].trim(), SEP_MILES, SEP_DEC);
 		}
 
 		if (!reg[3].trim().equals("")) {
 			// es debito
-			valor = CommonResumenBancario.String2Double(reg[3].trim(), ConstantesTool.SEP_MILES, ConstantesTool.SEP_DEC);
-			debito = CommonUtils.double2String(valor, ConstantesTool.SEP_MILES, ConstantesTool.SEP_DEC);
+			valor = String2Double(reg[3].trim(), SEP_MILES, SEP_DEC);
+			debito = CommonUtils.double2String(valor, SEP_MILES, SEP_DEC);
 
 			valor = valor * -1;
 		}
 
 		if (!reg[4].trim().equals("")) {
 			// es credito
-			valor = CommonResumenBancario.String2Double(reg[4].trim(), ConstantesTool.SEP_MILES, ConstantesTool.SEP_DEC);
-			credito = CommonUtils.double2String(valor, ConstantesTool.SEP_MILES, ConstantesTool.SEP_DEC);
+			valor = String2Double(reg[4].trim(), SEP_MILES, SEP_DEC);
+			credito = CommonUtils.double2String(valor, SEP_MILES, SEP_DEC);
 		}
 
 		String strSaldo = "";
@@ -203,7 +203,7 @@ public class AppOcrCredicoop implements BancosInterface {
 				}
 			}
 
-			strSaldo = CommonUtils.double2String(CommonUtils.redondear(nuevoTotal, 2), ConstantesTool.SEP_MILES, ConstantesTool.SEP_DEC);
+			strSaldo = CommonUtils.double2String(CommonUtils.redondear(nuevoTotal, 2), SEP_MILES, SEP_DEC);
 		}
 
 		return String.format("%s;%s;%s;%s;%s;%s", reg[0].trim(), reg[1].trim(), reg[2].trim(), debito, credito, strSaldo);

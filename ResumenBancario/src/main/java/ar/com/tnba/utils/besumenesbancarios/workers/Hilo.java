@@ -9,7 +9,8 @@ import java.nio.file.StandardOpenOption;
 import ar.com.rp.rpcutils.ExceptionUtils;
 import ar.com.tnba.utils.besumenesbancarios.business.CommonResumenBancario;
 import ar.com.tnba.utils.besumenesbancarios.business.LogManager;
-import ar.com.tnba.utils.besumenesbancarios.business.bancos.BancosInterface;
+import ar.com.tnba.utils.besumenesbancarios.business.ManejoDeArchivos;
+import ar.com.tnba.utils.besumenesbancarios.business.bancos.BaseBancos;
 import ar.com.tnba.utils.besumenesbancarios.dto.ArchivoProcesar;
 
 public class Hilo extends Thread {
@@ -52,20 +53,22 @@ public class Hilo extends Thread {
 	@Override
 	public void run() {
 		String datosCSV = "";
+		boolean hayError = false;
 		try {
 			try {
 				// Obtengo el banco businnes
-				BancosInterface bi = archivoProcesar.getBanco().getBancoClass().newInstance();
+				BaseBancos banco = archivoProcesar.getBanco().getBancoClass().newInstance();
 				// Obtengo OCR
-				String strOCR = bi.getOCR(archivoOCR);
+				String strOCR = banco.getOCR(archivoOCR);
 				// gravo ocr
 				CommonResumenBancario.txt2File(strOCR,
-						directorioDestino.getPath() + File.separator + archivoProcesar.getNombreArchivo() + CommonResumenBancario.subFijo(nroHoja) + ".ocr");
+						directorioDestino.getPath() + File.separator + ManejoDeArchivos.getNombreArchivoOCR(archivoProcesar.getNombreArchivo(), nroHoja));
 				// obtengo archivo parceado
-				datosCSV = bi.procesarArchivo(strOCR, archivoOCR, nroHoja);
+				datosCSV = banco.procesarArchivo(strOCR, archivoOCR, nroHoja);
 
 			} catch (Exception e) {
 				e.printStackTrace();
+				hayError = true;
 
 				try {
 					LogManager.getLogManager().logError(e);
@@ -74,7 +77,8 @@ public class Hilo extends Thread {
 				}
 				try {
 					CommonResumenBancario.txt2File(ExceptionUtils.exception2String(e),
-							directorioDestino.getPath() + File.separator + archivoProcesar.getNombreArchivo() + CommonResumenBancario.subFijo(nroHoja) + ".ERROR");
+							directorioDestino.getPath() + File.separator + ManejoDeArchivos.getNombreArchivoDumpError(archivoProcesar.getNombreArchivo(), nroHoja));
+
 				} catch (Exception e1) {
 					e1.printStackTrace();
 				}
@@ -82,7 +86,7 @@ public class Hilo extends Thread {
 
 			if (!datosCSV.equals("")) {
 				try {
-					Files.write(Paths.get(directorioDestino.getPath() + File.separator + archivoProcesar.getNombreArchivo() + CommonResumenBancario.subFijo(nroHoja) + ".csv"),
+					Files.write(Paths.get(directorioDestino.getPath() + File.separator + ManejoDeArchivos.getNombreArchivoCSV(archivoProcesar.getNombreArchivo(), nroHoja, hayError)),
 							datosCSV.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 				} catch (IOException e) {
 					e.printStackTrace();

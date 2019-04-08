@@ -29,8 +29,8 @@ public class AppOcrBBVA implements BancosInterface {
 			Integer idxTransporteFin = strOcr.lastIndexOf(TRANSPORTE_SALDO);
 			Integer idxSaldoAl = strOcr.indexOf(SALDO_AL);
 
-			vecMin[0] = idxTransporteFin == -1 ? ConstantesTool.NUMERO_ALTO : idxTransporteFin;
-			vecMin[1] = idxSaldoAl == -1 ? ConstantesTool.NUMERO_ALTO : idxSaldoAl;
+			vecMin[0] = idxTransporteFin == -1 ? NUMERO_ALTO : idxTransporteFin;
+			vecMin[1] = idxSaldoAl == -1 ? NUMERO_ALTO : idxSaldoAl;
 
 			Integer idxFin = CommonUtils.minimo(vecMin);
 
@@ -38,12 +38,12 @@ public class AppOcrBBVA implements BancosInterface {
 			Integer idxTransporteInicio = strOcr.indexOf(TRANSPORTE_SALDO);
 			Integer idxSaldoAnt = strOcr.indexOf(SALDO_ANTERIOR);
 
-			vecMin[0] = idxTransporteInicio == -1 ? ConstantesTool.NUMERO_ALTO : idxTransporteInicio;
-			vecMin[1] = idxSaldoAnt == -1 ? ConstantesTool.NUMERO_ALTO : idxSaldoAnt;
+			vecMin[0] = idxTransporteInicio == -1 ? NUMERO_ALTO : idxTransporteInicio;
+			vecMin[1] = idxSaldoAnt == -1 ? NUMERO_ALTO : idxSaldoAnt;
 
 			Integer idxIni = CommonUtils.minimo(vecMin);
 
-			if ((idxIni != ConstantesTool.NUMERO_ALTO) && (idxFin != ConstantesTool.NUMERO_ALTO) && (idxIni < idxFin)) {
+			if ((idxIni != NUMERO_ALTO) && (idxFin != NUMERO_ALTO) && (idxIni < idxFin)) {
 
 				strOcrFormateado = strOcr.substring(idxIni, idxFin);
 
@@ -52,7 +52,7 @@ public class AppOcrBBVA implements BancosInterface {
 					String[] parts = strOcrFormateado.split("\n");
 
 					String saldoInicial = parts[0].replace(TRANSPORTE_SALDO, "").replaceAll(SALDO_ANTERIOR, "");
-					Double dblSaldoAnterior = CommonResumenBancario.String2Double(saldoInicial, ConstantesTool.SEP_MILES, ConstantesTool.SEP_DEC);
+					Double dblSaldoAnterior = String2Double(saldoInicial, SEP_MILES, SEP_DEC);
 
 					// retiro las 2 primeras lineas
 					String[] parts2 = new String[parts.length - 1];
@@ -83,8 +83,8 @@ public class AppOcrBBVA implements BancosInterface {
 
 							String saldoFinal = rengistroSplit[rengistroSplit.length - 1];
 
-							double dblSaldoRenglon = CommonResumenBancario.String2Double(saldoFinal, ConstantesTool.SEP_MILES, ConstantesTool.SEP_DEC);
-							double dblValorMovimiento = CommonResumenBancario.String2Double(rengistroSplit[2], ConstantesTool.SEP_MILES, ConstantesTool.SEP_DEC);
+							double dblSaldoRenglon = String2Double(saldoFinal, SEP_MILES, SEP_DEC);
+							double dblValorMovimiento = String2Double(rengistroSplit[2], SEP_MILES, SEP_DEC);
 
 							String debito = "";
 							String credito = "";
