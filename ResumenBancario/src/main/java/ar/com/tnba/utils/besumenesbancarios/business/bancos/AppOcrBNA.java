@@ -7,11 +7,16 @@ import ar.com.rp.rpcutils.CommonUtils;
 import ar.com.tnba.utils.besumenesbancarios.business.CommonResumenBancario;
 import ar.com.tnba.utils.besumenesbancarios.business.ConstantesTool;
 import ar.com.tnba.utils.besumenesbancarios.business.LogManager;
+import ar.com.tnba.utils.besumenesbancarios.business.bancos.BancosBusiness.Bancos;
 import net.sourceforge.lept4j.util.LoadLibs;
 import net.sourceforge.tess4j.ITesseract;
 import net.sourceforge.tess4j.Tesseract1;
 
-public class AppOcrBNA implements BancosInterface {
+public class AppOcrBNA extends BaseBancos {
+
+	public AppOcrBNA() {
+		super(Bancos.BancoNacion);
+	}
 
 	@Override
 	public String procesarArchivo(String strOcr, File archivo, Integer pagina) throws Exception {

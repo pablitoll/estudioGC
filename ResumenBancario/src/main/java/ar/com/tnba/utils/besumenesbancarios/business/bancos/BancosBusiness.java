@@ -13,6 +13,8 @@ public class BancosBusiness {
 	// "AppOcrPatagonia");
 	//
 	public enum Bancos {
+		BancoNacion("00011", "BancoNacion", "BANCO DE LA NACION ARGENTINA", 11,	AppOcrBNA.class),
+		CREDICOOP("00191", "BancoCrediccop", "BANCO CREDICOOP COOPERATIVO LIMITADO", 191, AppOcrCredicoop.class),
 		ICBC("00015", "BancoICBC", "INDUSTRIAL AND COMMERCIAL BANK OF CHINA (ICBC)", 15, AppOcrICBC.class), 
 		PATAGONIA("00034", "BancoPatagonia", "BANCO PATAGONIA S.A.", 64,
 				AppOcrPatagonia.class);
