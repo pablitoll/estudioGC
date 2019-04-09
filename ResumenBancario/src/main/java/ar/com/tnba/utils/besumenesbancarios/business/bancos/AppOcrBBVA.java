@@ -1,164 +1,119 @@
 package ar.com.tnba.utils.besumenesbancarios.business.bancos;
 
 import java.io.File;
-import java.util.StringJoiner;
 
 import ar.com.rp.rpcutils.CommonUtils;
-import ar.com.rp.ui.common.Common;
-import ar.com.tnba.utils.besumenesbancarios.business.CommonResumenBancario;
-import ar.com.tnba.utils.besumenesbancarios.business.ConstantesTool;
-import ar.com.tnba.utils.besumenesbancarios.business.LogManager;
+import ar.com.tnba.utils.besumenesbancarios.business.bancos.BancosBusiness.Bancos;
 import net.sourceforge.lept4j.util.LoadLibs;
 import net.sourceforge.tess4j.ITesseract;
-import net.sourceforge.tess4j.Tesseract;
+import net.sourceforge.tess4j.Tesseract1;
 
-public class AppOcrBBVA implements BancosInterface {
+public class AppOcrBBVA extends BaseBancos {
+
+	public AppOcrBBVA() {
+		super(Bancos.FRANCES);
+	}
 
 	private static final String TRANSPORTE_SALDO = "TRANSPORTE SALDO";
 	private static final String SALDO_AL = "SALDO AL";
 	private static final String SALDO_ANTERIOR = "SALDO ANTERIOR";
 	private static final String SIN_MOVIMIENTOS = "S/MOVIMIENTOS";
+	private static final int POS_FECHA = 5;
 
-	public String procesarArchivo(String strOcr, File archivo, Integer pagina) throws Exception {
-		try {
-			System.out.println("Procesando Frances: " + archivo.getName() + " Pagina " + pagina);
+	@Override
+	protected String[] getRegistrosFromOCR(String strOcr, File archivo, Integer nroPapagina) throws Exception {
 
-			String strOcrFormateado = "";
-			Integer vecMin[] = new Integer[2];
-			// Calculo pos final
-			Integer idxTransporteFin = strOcr.lastIndexOf(TRANSPORTE_SALDO);
-			Integer idxSaldoAl = strOcr.indexOf(SALDO_AL);
+		String strOcrFormateado = "";
+		Integer vecMin[] = new Integer[2];
+		// Calculo pos final
+		Integer idxTransporteFin = strOcr.lastIndexOf(TRANSPORTE_SALDO);
+		Integer idxSaldoAl = strOcr.indexOf(SALDO_AL);
 
-			vecMin[0] = idxTransporteFin == -1 ? NUMERO_ALTO : idxTransporteFin;
-			vecMin[1] = idxSaldoAl == -1 ? NUMERO_ALTO : idxSaldoAl;
+		vecMin[0] = idxTransporteFin == -1 ? NUMERO_ALTO : idxTransporteFin;
+		vecMin[1] = idxSaldoAl == -1 ? NUMERO_ALTO : idxSaldoAl;
 
-			Integer idxFin = CommonUtils.minimo(vecMin);
+		Integer idxFin = CommonUtils.minimo(vecMin);
 
-			// Calculo pos ini
-			Integer idxTransporteInicio = strOcr.indexOf(TRANSPORTE_SALDO);
-			Integer idxSaldoAnt = strOcr.indexOf(SALDO_ANTERIOR);
+		// Calculo pos ini
+		Integer idxTransporteInicio = strOcr.indexOf(TRANSPORTE_SALDO);
+		Integer idxSaldoAnt = strOcr.indexOf(SALDO_ANTERIOR);
 
-			vecMin[0] = idxTransporteInicio == -1 ? NUMERO_ALTO : idxTransporteInicio;
-			vecMin[1] = idxSaldoAnt == -1 ? NUMERO_ALTO : idxSaldoAnt;
+		vecMin[0] = idxTransporteInicio == -1 ? NUMERO_ALTO : idxTransporteInicio;
+		vecMin[1] = idxSaldoAnt == -1 ? NUMERO_ALTO : idxSaldoAnt;
 
-			Integer idxIni = CommonUtils.minimo(vecMin);
+		Integer idxIni = CommonUtils.minimo(vecMin);
 
-			if ((idxIni != NUMERO_ALTO) && (idxFin != NUMERO_ALTO) && (idxIni < idxFin)) {
+		if ((idxIni != NUMERO_ALTO) && (idxFin != NUMERO_ALTO) && (idxIni < idxFin)) {
 
-				strOcrFormateado = strOcr.substring(idxIni, idxFin);
+			strOcrFormateado = strOcr.substring(idxIni, idxFin);
 
-				if (!strOcrFormateado.contains(SIN_MOVIMIENTOS)) {
+			if (!strOcrFormateado.contains(SIN_MOVIMIENTOS)) {
 
-					String[] parts = strOcrFormateado.split("\n");
+				strOcrFormateado = strOcrFormateado.replaceAll(", ", ",");
+				strOcrFormateado = strOcrFormateado.replaceAll(" ,", ",");
+				strOcrFormateado = strOcrFormateado.replaceAll(" \\.", ".");
 
-					String saldoInicial = parts[0].replace(TRANSPORTE_SALDO, "").replaceAll(SALDO_ANTERIOR, "");
-					Double dblSaldoAnterior = String2Double(saldoInicial, SEP_MILES, SEP_DEC);
+				String[] parts = strOcrFormateado.split("\n");
 
-					// retiro las 2 primeras lineas
-					String[] parts2 = new String[parts.length - 1];
-					for (int i = 1; i < parts.length; i++) {
-						if (!parts[i].contains(SIN_MOVIMIENTOS)) {
-							parts2[i - 1] = parts[i];
-						}
+				String auxSaldoInicial = parts[0].replace(TRANSPORTE_SALDO, "").replaceAll(SALDO_ANTERIOR, "");
+				saldoInicial = String2Double(auxSaldoInicial, SEP_MILES, SEP_DEC);
+				parts[0] = "";
+
+				// retiro las lineas SIN_MOVIMIENTOS
+				for (int i = 0; i < parts.length; i++) {
+					if (parts[i].contains(SIN_MOVIMIENTOS)) {
+						parts[i] = "";
 					}
-
-					for (int i = 0; i < parts2.length; i++) {
-						try {
-							// saco el blanco despues de la coma en el saldo
-							parts2[i] = parts2[i].replaceAll(", ", ",");
-							parts2[i] = parts2[i].replaceAll(" ,", ",");
-							parts2[i] = parts2[i].replaceAll(" \\.", ".");
-							String c = parts2[i];
-
-							// separo fecha
-							StringBuffer sb = new StringBuffer(c);
-							sb.setCharAt(5, ';');
-							int finmovi = sb.lastIndexOf(" ");
-							sb.setCharAt(finmovi, ';');
-							int inimovi = sb.lastIndexOf(" ");
-							sb.setCharAt(inimovi, ';');
-
-							String rengistroSplit[] = sb.toString().split(";");
-							// ya tengo el registro spliteado en registroSplit, de ahora sigo con ese
-
-							String saldoFinal = rengistroSplit[rengistroSplit.length - 1];
-
-							double dblSaldoRenglon = String2Double(saldoFinal, SEP_MILES, SEP_DEC);
-							double dblValorMovimiento = String2Double(rengistroSplit[2], SEP_MILES, SEP_DEC);
-
-							String debito = "";
-							String credito = "";
-							if (dblSaldoRenglon > dblSaldoAnterior) {
-								// credito
-								credito = CommonUtils.double2String(dblValorMovimiento, Common.getGeneralSettings().getSeparadorMiles(),
-										Common.getGeneralSettings().getSeparadorDecimal());
-
-							} else { // debito
-								debito = CommonUtils.double2String(dblValorMovimiento, Common.getGeneralSettings().getSeparadorMiles(),
-										Common.getGeneralSettings().getSeparadorDecimal());
-							}
-							dblSaldoAnterior = dblSaldoRenglon;
-
-							parts2[i] = String.format("%s;%s;%s;%s;%s", rengistroSplit[0], rengistroSplit[1], debito, credito,
-									CommonUtils.double2String(dblSaldoRenglon, Common.getGeneralSettings().getSeparadorMiles(), Common.getGeneralSettings().getSeparadorDecimal()));
-						} catch (Exception e) {
-							e.printStackTrace();
-							parts2[i - 1] = String.format(ConstantesTool.LEYENDA_FALLO, i);
-							try {
-								LogManager.getLogManager().logError(e);
-							} catch (Exception e2) {
-								e.printStackTrace();
-							}
-						}
-					}
-
-					StringJoiner sj = new StringJoiner("\n");
-					for (String s : parts2) {
-						sj.add(s);
-					}
-					strOcrFormateado = sj.toString();
-				} else {
-					strOcrFormateado = "";
 				}
+
+				return parts;
 			}
-			return strOcrFormateado;
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw (e);
 		}
+		return null;
 	}
 
-	// private double SanityDouble(String cadena) {
-	// double dblSaldoFinal;
-	// String aux = cadena;
-	// // saco los blancos
-	// aux = aux.replace(" ", "");
-	// // saco todos los puntos
-	// aux = aux.replace(".", "");
-	// // saco todos las comas
-	// aux = aux.replace(",", "");
-	// // le agrego un punto a 2 caracteres del final
-	// String saldoFinalaux = new StringBuilder(aux).insert(aux.length() - 2,
-	// ".").toString(); // asumo que el ultimo
-	//
-	// aux = saldoFinalaux.toString();
-	//
-	// dblSaldoFinal = Double.parseDouble(aux);
-	//
-	// return dblSaldoFinal;
-	// }
+	@Override
+	protected String armarRegistro(String registro, Double saldoInicial) throws Exception {
 
-	public String getOCR(File archivoOCR) throws Exception {
-		System.out.println("Procesando OCR: " + archivoOCR.getName());
-		return getInstanceFrances(archivoOCR).doOCR(archivoOCR);
+		registro = insertarSeparador(registro, POS_FECHA); 
+		int finmovi = registro.lastIndexOf(" ");
+		registro = insertarSeparador(registro, finmovi);
+		int inimovi = registro.lastIndexOf(" ", finmovi);
+		registro = insertarSeparador(registro, inimovi);
+
+		String rengistroSplit[] = registro.split(";");
+		// ya tengo el registro spliteado en registroSplit, de ahora sigo con ese
+
+		String saldoFinal = rengistroSplit[rengistroSplit.length - 1];
+
+		double dblSaldoRenglon = String2Double(saldoFinal, SEP_MILES, SEP_DEC);
+		double dblValorMovimiento = String2Double(rengistroSplit[2], SEP_MILES, SEP_DEC);
+
+		String debito = "";
+		String credito = "";
+		if (dblSaldoRenglon > saldoInicial) {
+			// credito
+			credito = CommonUtils.double2String(dblValorMovimiento, SEP_MILES, SEP_DEC);
+		} else { // debito
+			debito = CommonUtils.double2String(dblValorMovimiento, SEP_MILES, SEP_DEC);
+		}
+
+		return String.format("%s;%s;%s;%s;%s", rengistroSplit[0], rengistroSplit[1], debito, credito, CommonUtils.double2String(dblSaldoRenglon, SEP_MILES, SEP_DEC));
 	}
 
-	private ITesseract getInstanceFrances(File archivoOCR) {
-		Tesseract instanceFrances = new Tesseract(); // JNA Direct Mapping
+	@Override
+	protected Double darSaldoSubTotal(String registro) throws Exception {
+		String reg[] = registro.split(";");
+		return String2Double(reg[reg.length - 1].trim(), SEP_MILES, SEP_DEC);
+	}
+
+	@Override
+	protected ITesseract getInstanceTesseract(File archivoOCR) {
+		Tesseract1 instanceFrances = new Tesseract1(); // JNA Direct Mapping
 		instanceFrances.setDatapath(archivoOCR.getParent() + File.separator + "temp\\tessdata"); // path to tessdata directory
 		File tessDataFolder = LoadLibs.extractNativeResources("tessdata");
 		instanceFrances.setDatapath(tessDataFolder.getAbsolutePath());
 		return instanceFrances;
 	}
+
 }

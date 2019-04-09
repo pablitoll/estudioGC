@@ -1,13 +1,14 @@
 package ar.com.tnba.utils.besumenesbancarios.business.bancos;
 
 import java.io.File;
+
 import ar.com.rp.rpcutils.CommonUtils;
 import ar.com.tnba.utils.besumenesbancarios.business.bancos.BancosBusiness.Bancos;
 
 public class AppOcrBNA extends BaseBancos {
 
 	public AppOcrBNA() {
-		super(Bancos.BancoNacion);
+		super(Bancos.NACION);
 	}
 
 	@Override

@@ -8,7 +8,7 @@ import ar.com.tnba.utils.besumenesbancarios.business.bancos.BancosBusiness.Banco
 public class AppOcrCredicoop extends BaseBancos {
 
 	public AppOcrCredicoop() {
-		super(Bancos.CREDICOOP);
+		super(Bancos.Credicoop);
 	}
 
 	private static final int POS_FIN_DES = 56;
