@@ -154,14 +154,6 @@ public class AppOcrICBC extends BaseBancos {
 		return SALDO_TOTAL_NO_VALIDO;
 	}
 
-	@Override
-	protected Double String2Double(String valor, String sepMiles, String sepDec) throws Exception {
-		if (valor.substring(valor.length() - 1).equals("-")) {
-			valor = "-" + valor.substring(0, valor.length() - 1);
-		}
-		return super.String2Double(valor, sepMiles, sepDec);
-	}
-
 	private boolean isDouble(String valor) {
 		valor = valor.trim();
 		valor = valor.replace(".", "");

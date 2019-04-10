@@ -116,9 +116,14 @@ public abstract class BaseBancos {
 	}
 
 	protected Double String2Double(String valor, String sepMiles, String sepDec) throws Exception {
+
+		if (valor.substring(valor.length() - 1).equals("-")) {
+			valor = "-" + valor.substring(0, valor.length() - 1);
+		}
+
 		valor = valor.replaceAll(" ", "").replaceAll(" .", ".").replaceAll(" ,", ",");
-		if ((valor.indexOf(sepDec) != -1) && (valor.length() - valor.indexOf(sepDec) > 3)) {
-			// Entro si vienen mas de dos decimales
+		if (valor.indexOf(sepDec) != -1) {
+			valor = valor + "0000000";
 			valor = valor.substring(0, valor.indexOf(sepDec) + 3);
 		}
 

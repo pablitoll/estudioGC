@@ -16,10 +16,6 @@ public class AppOcrRio extends BaseBancos {
 		super(Bancos.RIO);
 	}
 
-	private static final int POS_FIN_DES = 105;
-	private static final int POS_FIN_DEBITO = 136;
-	private static final int POS_FIN_CREDITO = 142;
-	// private static final int POS_FIN_TOTAL = 112;
 	private static final int POS_FIN_FECHA = 8;
 	private static final String HEADER_FECHA = "CTA CORR PESOS Nro.";
 	private static final String FOOT_SALTO = "CTA CORR DOLAR Nro.";
@@ -34,7 +30,7 @@ public class AppOcrRio extends BaseBancos {
 		String strOcrFormateado = "";
 
 		// inicio
-		int idxInicio = strOcr.lastIndexOf(HEADER_FECHA);
+		int idxInicio = strOcr.indexOf(HEADER_FECHA);
 
 		// fin
 		int idxDolar_Fin = strOcr.lastIndexOf(FOOT_SALTO);
@@ -57,12 +53,17 @@ public class AppOcrRio extends BaseBancos {
 
 			String[] parts = strOcrFormateado.split("\n");
 			saldoInicial = SALDO_TOTAL_NO_VALIDO;
+			boolean procesoRegistro = false;
 
 			for (int i = 0; i < parts.length; i++) {
 				if (parts[i].contains(HEADER_FECHA)) {
 					parts[i] = "";
 				} else {
-					if (parts[i].contains(SALDO)) {
+
+					// hay casos que el OCR no reconoce el fin de SALDO, y se esta lletendo el saldo
+					// de DOLAR, por eso pongo la bandera de si hay registros procesados no tome el
+					// saldo (porque es el dolar)
+					if (parts[i].contains(SALDO) && !procesoRegistro) {
 						String reg[] = parts[i].split(SALDO);
 						saldoInicial = String2Double(reg[reg.length - 1], SEP_MILES, SEP_DEC);
 						parts[i] = "";
@@ -82,8 +83,8 @@ public class AppOcrRio extends BaseBancos {
 								parts[i] = insertarSeparador(parts[i], idx_lastSpace);
 
 								parts[i] = insertarSeparador(parts[i], POS_FIN_FECHA);
+								procesoRegistro = true;
 							} else {
-								// TODO VER LAS DESC
 								parts[i] = parts[i].substring(POS_MARGEN_IZQ).trim();
 								int indx = parts[i - 1].indexOf(";", POS_FIN_FECHA + 1);
 								if (indx > -1) {
@@ -107,8 +108,7 @@ public class AppOcrRio extends BaseBancos {
 		if (matcher.find()) {
 			indice = matcher.start();
 		}
-
-		if (indice <= 4) {
+		if (indice <= 5) {
 			return indice;
 		}
 		return -1;
@@ -127,7 +127,6 @@ public class AppOcrRio extends BaseBancos {
 	@Override
 	protected String armarRegistro(String registro, Double saldoOperacionAnterior) throws Exception {
 		String reg[] = registro.split(";");
-
 		Double valor = 0.0;
 		Double valorSubTotal = SALDO_TOTAL_NO_VALIDO;
 
