@@ -75,7 +75,7 @@ public class AppOcrBBVA extends BaseBancos {
 	@Override
 	protected String armarRegistro(String registro, Double saldoInicial) throws Exception {
 
-		registro = insertarSeparador(registro, POS_FECHA); 
+		registro = insertarSeparador(registro, POS_FECHA);
 		int finmovi = registro.lastIndexOf(" ");
 		registro = insertarSeparador(registro, finmovi);
 		int inimovi = registro.lastIndexOf(" ", finmovi);
@@ -109,11 +109,13 @@ public class AppOcrBBVA extends BaseBancos {
 
 	@Override
 	protected ITesseract getInstanceTesseract(File archivoOCR) {
-		Tesseract1 instanceFrances = new Tesseract1(); // JNA Direct Mapping
-		instanceFrances.setDatapath(archivoOCR.getParent() + File.separator + "temp\\tessdata"); // path to tessdata directory
-		File tessDataFolder = LoadLibs.extractNativeResources("tessdata");
-		instanceFrances.setDatapath(tessDataFolder.getAbsolutePath());
-		return instanceFrances;
+		if (tesseract == null) {
+			tesseract = new Tesseract1(); // JNA Direct Mapping
+			tesseract.setDatapath(archivoOCR.getParent() + File.separator + "temp\\tessdata"); // path to tessdata directory
+			File tessDataFolder = LoadLibs.extractNativeResources("tessdata");
+			tesseract.setDatapath(tessDataFolder.getAbsolutePath());
+		}
+		return tesseract;
 	}
 
 }

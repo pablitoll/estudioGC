@@ -17,14 +17,14 @@ public abstract class BaseBancos {
 	protected static final String SEP_DEC = ",";
 	protected static final String SEP_MILES = ".";
 
-	protected abstract String armarRegistro(String registro, Double saldoInicial) throws Exception;
+	protected abstract String armarRegistro(String registro, Double saldoOperacionAnterior) throws Exception;
 
 	protected abstract Double darSaldoSubTotal(String registro) throws Exception;
 
 	protected abstract String[] getRegistrosFromOCR(String strOcr, File archivo, Integer nroPapagina) throws Exception;
 
 	private Bancos banco;
-	private ITesseract tesseract = null;
+	protected ITesseract tesseract = null;
 	private String espacios = "";
 	protected Double saldoInicial = SALDO_TOTAL_NO_VALIDO;
 
@@ -66,10 +66,11 @@ public abstract class BaseBancos {
 						e.printStackTrace();
 						String errorSubtotal = "";
 						if (e instanceof ExceptionSubTotal) {
+							System.out.println(reg);
 							errorSubtotal = "Error en el Caclulo del Subtotal - ";
 						}
 						retorno.append(armarRegistroTrim(reg) + errorSubtotal + LEYENDA_FALLO + "\n");
-						saldo = SALDO_TOTAL_NO_VALIDO; // Si falla no puedo garantizar el contador
+						saldo = darSaldoSubTotalFromErrror(reg);
 						try {
 							LogManager.getLogManager().logError(e);
 						} catch (Exception e2) {
@@ -82,6 +83,10 @@ public abstract class BaseBancos {
 			return retorno.toString();
 		}
 		return "";
+	}
+
+	protected Double darSaldoSubTotalFromErrror(String reg) {
+		return SALDO_TOTAL_NO_VALIDO; // Si falla no puedo garantizar el contador
 	}
 
 	private String armarRegistroTrim(String registro) {
@@ -119,7 +124,7 @@ public abstract class BaseBancos {
 
 		valor = valor.replaceAll("\\.", "").replaceAll("\\,", "");
 		valor = valor.substring(0, valor.length() - 2) + sepDec + CommonUtils.strRigth(valor, 2);
-		
+
 		return CommonUtils.String2Double(valor, sepMiles, sepDec);
 	}
 }

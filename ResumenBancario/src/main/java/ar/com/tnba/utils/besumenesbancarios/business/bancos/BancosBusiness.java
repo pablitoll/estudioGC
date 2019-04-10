@@ -15,10 +15,13 @@ public class BancosBusiness {
 	public enum Bancos {
 		NACION("00011", "BancoNacion", "BANCO DE LA NACION ARGENTINA", 11,	AppOcrBNA.class),
 		FRANCES("00017", "BancoFrances", "BBVA BANCO FRANCES S.A.", 17, AppOcrBBVA.class),
-		Credicoop("00191", "BancoCrediccop", "BANCO CREDICOOP COOPERATIVO LIMITADO", 191, AppOcrCredicoop.class),
+		CREDICCOP("00191", "BancoCrediccop", "BANCO CREDICOOP COOPERATIVO LIMITADO", 191, AppOcrCredicoop.class),
 		ICBC("00015", "BancoICBC", "INDUSTRIAL AND COMMERCIAL BANK OF CHINA (ICBC)", 15, AppOcrICBC.class), 
 		PATAGONIA("00034", "BancoPatagonia", "BANCO PATAGONIA S.A.", 64,
-				AppOcrPatagonia.class);
+				AppOcrPatagonia.class),
+		RIO("00072", "BancoRio", "BANCO SANTANDER RIO S.A.", 72, AppOcrRio.class); 
+		
+		
 
 		private String codigo;
 		private String directorio;
