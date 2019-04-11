@@ -17,9 +17,8 @@ public class AppOcrCiudad extends BaseBancos {
 	private static final String HEADER_FECHA = "SISTEMA CUENTA";
 	private static final String TRANSPORTE = "TRANSPORTE";
 	private static final int POS_MARGEN_IZQ = 4;
-	private static final String REG_EXP_FECHA = "[0123456789]{2}+[\\-]+[QWERTYUIOPASDFGHJKLZXCVBNM0123456789]{3}+[\\-]+[0123456789]{4}";
+	private static final String REG_EXP_FECHA = "[0123456789]{1,2}+[\\-]+\\w{2,5}+[\\-]+[0123456789]{4}";
 	private static final int POS_FIN_DESC = 34;
-	private static final int POS_FIN_CREDITO = 62;
 	private static final int POS_SUBTOTAL = 3;
 	private static final int POS_VALOR = 2;
 	private static final int POS_FECHA = 0;
@@ -43,6 +42,7 @@ public class AppOcrCiudad extends BaseBancos {
 
 			// ALTA NEGRADA
 			strOcrFormateado = strOcrFormateado.replaceAll(", ", ",");
+			strOcrFormateado = strOcrFormateado.replaceAll("\\-N\\w*V\\-", "-NOV-");
 			strOcrFormateado = strOcrFormateado.replaceAll("\\.,", ".");
 			strOcrFormateado = strOcrFormateado.replaceAll(" ,", ",");
 			strOcrFormateado = strOcrFormateado.replaceAll("[0123456789] -", "-");
@@ -74,19 +74,29 @@ public class AppOcrCiudad extends BaseBancos {
 							if ((indFecha > -1) && !parts[i].contains(TRANSPORTE)) {
 								parts[i] = parts[i].substring(indFecha).trim();
 								parts[i] = insertarSeparador(parts[i], POS_FIN_FECHA);
-								parts[i] = insertarSeparador(parts[i], POS_FIN_DESC + 1);
-								parts[i] = insertarSeparador(parts[i], POS_FIN_CREDITO + 2);
+								parts[i] = insertarSeparadorConTrim(parts[i], POS_FIN_DESC + 1);
+
+								// Valor
+								int idxSpace = parts[i].indexOf(" ", POS_FIN_DESC + 1);
+								parts[i] = insertarSeparadorConTrim(parts[i], idxSpace);
+
+								// Subtotal
+								idxSpace = parts[i].indexOf(" ", idxSpace);
+								if(idxSpace == -1) {
+									idxSpace =  parts[i].length();
+								}
+								parts[i] = insertarSeparadorConTrim(parts[i], idxSpace);
 
 								// Manejo de SubTotal
-								String auxSubTotal = parts[i].substring(POS_FIN_CREDITO + 3).trim();
-								parts[i] = parts[i].substring(0, POS_FIN_CREDITO + 4);
+								// String auxSubTotal = parts[i].substring(POS_FIN_CREDITO + 3).trim();
+								// parts[i] = parts[i].substring(0, POS_FIN_CREDITO + 4);
+								//
+								// int idx = auxSubTotal.indexOf(" ");
+								// if (idx == -1) {
+								// idx = auxSubTotal.length();
+								// }
 
-								int idx = auxSubTotal.indexOf(" ");
-								if (idx == -1) {
-									idx = auxSubTotal.length();
-								}
-
-								parts[i] += auxSubTotal.substring(0, idx);
+								// parts[i] += auxSubTotal.substring(0, idx);
 
 								procesoRegistro = true;
 							} else {

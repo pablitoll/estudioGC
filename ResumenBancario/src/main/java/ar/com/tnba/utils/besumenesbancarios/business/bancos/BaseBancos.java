@@ -107,6 +107,10 @@ public abstract class BaseBancos {
 		return espacios;
 	}
 
+	protected String insertarSeparadorConTrim(String valor, int pos) {
+		return valor.substring(0, pos).trim() + ";" + valor.substring(pos, valor.length()).trim();
+	}
+
 	protected String insertarSeparador(String valor, int pos, String cadena) {
 		return valor.substring(0, pos) + cadena + valor.substring(pos, valor.length());
 	}
