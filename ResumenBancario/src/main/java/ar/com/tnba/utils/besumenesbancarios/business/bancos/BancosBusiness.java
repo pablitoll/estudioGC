@@ -17,12 +17,11 @@ public class BancosBusiness {
 		FRANCES("00017", "BancoFrances", "BBVA BANCO FRANCES S.A.", 17, AppOcrBBVA.class),
 		CREDICCOP("00191", "BancoCrediccop", "BANCO CREDICOOP COOPERATIVO LIMITADO", 191, AppOcrCredicoop.class),
 		ICBC("00015", "BancoICBC", "INDUSTRIAL AND COMMERCIAL BANK OF CHINA (ICBC)", 15, AppOcrICBC.class), 
-		PATAGONIA("00034", "BancoPatagonia", "BANCO PATAGONIA S.A.", 64,
-				AppOcrPatagonia.class),
-		RIO("00072", "BancoRio", "BANCO SANTANDER RIO S.A.", 72, AppOcrRio.class); 
+		PATAGONIA("00034", "BancoPatagonia", "BANCO PATAGONIA S.A.", 64, AppOcrPatagonia.class),
+		RIO("00072", "BancoRio", "BANCO SANTANDER RIO S.A.", 72, AppOcrRio.class),
+		HIPOTECARIO("00044", "BancoHipotecario", "BANCO HIPOTECARIO S.A.", 44, AppOcrHipotecario.class),
+		CIUDAD("00029", "BancoCiudad", "BANCO DE LA CIUDAD DE BUENOS AIRES", 29, AppOcrCiudad.class);
 		
-		
-
 		private String codigo;
 		private String directorio;
 		private String nombre;
