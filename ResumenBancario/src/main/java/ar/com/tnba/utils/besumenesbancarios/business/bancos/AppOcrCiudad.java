@@ -87,17 +87,6 @@ public class AppOcrCiudad extends BaseBancos {
 								}
 								parts[i] = insertarSeparadorConTrim(parts[i], idxSpace);
 
-								// Manejo de SubTotal
-								// String auxSubTotal = parts[i].substring(POS_FIN_CREDITO + 3).trim();
-								// parts[i] = parts[i].substring(0, POS_FIN_CREDITO + 4);
-								//
-								// int idx = auxSubTotal.indexOf(" ");
-								// if (idx == -1) {
-								// idx = auxSubTotal.length();
-								// }
-
-								// parts[i] += auxSubTotal.substring(0, idx);
-
 								procesoRegistro = true;
 							} else {
 								parts[i] = "";

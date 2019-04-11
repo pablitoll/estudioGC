@@ -1,4 +1,3 @@
-//TODO NO ESTA ECHO
 package ar.com.tnba.utils.besumenesbancarios.business.bancos;
 
 import java.io.File;
@@ -14,37 +13,38 @@ public class AppOcrHipotecario extends BaseBancos {
 		super(Bancos.HIPOTECARIO);
 	}
 
-	private static final String REG_EXP_VISA = "[0123456789]{4,9}[ ]+[0123456789]{4,10}";
-	private Pattern pattern = Pattern.compile(REG_EXP_VISA);
+	private static final String REG_EXP_FECHA = "[0123456789]{1,3}/[0123456789]{1,3}/[0123456789]{3,5}";
+	private static final String HEADER = "FECHA  DESCRIPCION                                          suc.";
+	private static final String HEADER2 = "DETALLE DE MOVIMIENTOS";
+	private static final String SALDO = "SALDO INICIAL";
+	private static final String SALDO_FIN = "SALDO FINAL DEL DIA";
+	private static final int POS_FIN_FECHA = 10;
+	private static final int POS_FIN_DESC = 85;
+	private static final int LARGO_DEBITO = 131;
+	private static final int LARGO_TOTAL = 170;
+	private static final int IDX_DEBITO = 2;
+	private static final int IDX_CREDITO = 3;
+	private static final int IDX_SALDO = 4;
+	private static final int IDX_FECHA = 0;
+	private static final int IDX_DESC = 1;
+	private static final String SEP_MILES_HIPOTECARIO = ",";
+	private static final String SEP_DEC_HIPOTECARIO = ".";
+	private static final String SALDO_FINAL = "SALDO FINAL AL DIA";
+	private Pattern pattern = Pattern.compile(REG_EXP_FECHA);
 
 	@Override
 	public String[] getRegistrosFromOCR(String strOcr, File archivo, Integer pagina) throws Exception {
 		String strOcrFormateado = "";
-		Integer vecMin[] = new Integer[3];
-
+		Integer vec[] = new Integer[2];
 		// inicio
-		int idxSaldoUltimo_Inicio = strOcr.lastIndexOf("SALDO ULTIMO");
-		int idxSaldoPagina_Inicio = strOcr.lastIndexOf("SALDO PAGINA ANTERIOR");
-		int idxSaldoHoja_Inicio = strOcr.lastIndexOf("SALDO HOJA ANTERIOR");
+		vec[0] = strOcr.indexOf(HEADER);
+		vec[1] = strOcr.indexOf(HEADER2);
 
-		vecMin[0] = idxSaldoUltimo_Inicio == -1 ? NUMERO_ALTO : idxSaldoUltimo_Inicio;
-		vecMin[1] = idxSaldoHoja_Inicio == -1 ? NUMERO_ALTO : idxSaldoHoja_Inicio;
-		vecMin[2] = idxSaldoPagina_Inicio == -1 ? NUMERO_ALTO : idxSaldoPagina_Inicio;
-
-		Integer idxInicio = CommonUtils.minimo(vecMin);
-
+		Integer idxInicio = CommonUtils.maximo(vec);
 		// fin
-		int idxContinuaDorso_Fin = strOcr.lastIndexOf("CONTINUA AL DORSO");
-		int idxTotal_Fin = strOcr.lastIndexOf("TOTAL IMP.LEY");
-		int idxContinuaHoja_Fin = strOcr.lastIndexOf("CONTINUA EN LA HOJA SIGUIENTE");
+		Integer idxFinal = strOcr.length();
 
-		vecMin[0] = idxContinuaDorso_Fin == -1 ? NUMERO_ALTO : idxContinuaDorso_Fin;
-		vecMin[1] = idxTotal_Fin == -1 ? NUMERO_ALTO : idxTotal_Fin;
-		vecMin[2] = idxContinuaHoja_Fin == -1 ? NUMERO_ALTO : idxContinuaHoja_Fin;
-
-		Integer idxFinal = CommonUtils.minimo(vecMin);
-
-		if ((idxInicio != NUMERO_ALTO) && (idxFinal != NUMERO_ALTO) && (idxInicio < idxFinal)) {
+		if (idxInicio != -1) {
 
 			strOcrFormateado = strOcr.substring(idxInicio, idxFinal);
 
@@ -54,113 +54,127 @@ public class AppOcrHipotecario extends BaseBancos {
 			strOcrFormateado = strOcrFormateado.replaceAll(" \\.", ".");
 			strOcrFormateado = strOcrFormateado.replaceAll("~", "");
 
-			// CASO
-			// 03-01 VISA 022019347 0022402739 0221 9.200,43
-			// 999999999+ n espacios + 9999999999
-			Matcher matcher = pattern.matcher(strOcrFormateado);
-
-			while (matcher.find()) {
-				String subVisa = strOcrFormateado.substring(matcher.start(), matcher.end());
-
-				String nuevoTexto = subVisa.replaceFirst(" ", ";");
-
-				strOcrFormateado = strOcrFormateado.replace(subVisa, nuevoTexto);
-			}
-
-			strOcrFormateado = strOcrFormateado.replace("                    ", ";");
-			strOcrFormateado = strOcrFormateado.replace("                   ", ";");
-			strOcrFormateado = strOcrFormateado.replace("                  ", ";");
-			strOcrFormateado = strOcrFormateado.replace("                 ", ";");
-			strOcrFormateado = strOcrFormateado.replace("                ", ";");
-			strOcrFormateado = strOcrFormateado.replace("               ", ";");
-			strOcrFormateado = strOcrFormateado.replace("              ", ";");
-			strOcrFormateado = strOcrFormateado.replace("             ", ";");
-			strOcrFormateado = strOcrFormateado.replace("            ", ";");
-			strOcrFormateado = strOcrFormateado.replace("           ", ";");
-			strOcrFormateado = strOcrFormateado.replace("          ", ";");
-			strOcrFormateado = strOcrFormateado.replace("         ", ";");
-			strOcrFormateado = strOcrFormateado.replace("        ", ";");
-			strOcrFormateado = strOcrFormateado.replace("       ", ";");
-			strOcrFormateado = strOcrFormateado.replace("      ", ";");
-			strOcrFormateado = strOcrFormateado.replace("     ", ";");
-			strOcrFormateado = strOcrFormateado.replace("    ", ";");
-			strOcrFormateado = strOcrFormateado.replace("   ", ";");
-			strOcrFormateado = strOcrFormateado.replace("  ", ";");
-
-			strOcrFormateado = strOcrFormateado.replace(";;", ";");
-			strOcrFormateado = strOcrFormateado.replace(";;", ";");
-			strOcrFormateado = strOcrFormateado.replace(";;", ";");
-
 			String[] parts = strOcrFormateado.split("\n");
 
-			// Saldo inicial
-			String regZero[] = parts[0].split(";");
-			saldoInicial = String2Double(regZero[regZero.length - 1], SEP_MILES, SEP_DEC);
-			parts[0] = "";
+			boolean procesoRegistro = false;
+			Double saldo = 0.0;
 
-			for (int i = 1; i < parts.length; i++) {
-				parts[i] = parts[i].replaceFirst(" ", ";");
+			for (int i = 0; i < parts.length; i++) {
+				if (parts[i].contains(HEADER) || (parts[i].length() < POS_FIN_FECHA)) {
+					parts[i] = "";
+				} else {
+					if (parts[i].contains(SALDO) || parts[i].contains(SALDO_FIN) || parts[i].contains(SALDO_FINAL)) {
+						saldo = getSaldo(parts[i]);
+						parts[i] = "";
+						if (!procesoRegistro) {
+							saldoInicial = saldo;
+						}
+					} else {
+						// Le voy calculando el sub total a medida que voy avanzando
+						int indFecha = indexFecha(parts[i]);
+						if ((indFecha > -1) && !parts[i].contains(SALDO)) {
+							parts[i] = insertarSeparadorConTrim(parts[i], indFecha);
+							// Valor
+							// Determino si es debto o credito por el largo total de la cadena
+							if (parts[i].length() <= LARGO_DEBITO) {
+								// es debito
+								parts[i] = insertarSeparadorConTrim(parts[i], POS_FIN_DESC, ";") + ";;";
+								Double deb = getDebito(parts[i]);
+								saldo -= deb;
+								parts[i] += CommonUtils.double2String(saldo, SEP_MILES_HIPOTECARIO, SEP_DEC_HIPOTECARIO);
+							} else {
+								if (parts[i].length() <= LARGO_TOTAL) {
+									// es credito
+									parts[i] = insertarSeparadorConTrim(parts[i], POS_FIN_DESC, ";;") + ";";
+									Double cred = getCredito(parts[i]);
+									saldo += cred;
+									parts[i] += CommonUtils.double2String(saldo, SEP_MILES_HIPOTECARIO, SEP_DEC_HIPOTECARIO);
+									// } else {
+									// // es total;
+									// parts[i] = insertarSeparadorConTrim(parts[i], POS_FIN_DESC, ";;;");
+								}
+							}
+
+							procesoRegistro = true;
+						} else {
+							parts[i] = "";
+						}
+					}
+				}
 			}
-
 			return parts;
 		}
 
 		return null;
 	}
 
+	private Double getDebito(String registro) throws Exception {
+		String reg[] = registro.split(";");
+		return String2Double(reg[IDX_DEBITO], SEP_MILES_HIPOTECARIO, SEP_DEC_HIPOTECARIO);
+	}
+
+	private Double getCredito(String registro) throws Exception {
+		String reg[] = registro.split(";");
+		return String2Double(reg[IDX_CREDITO], SEP_MILES_HIPOTECARIO, SEP_DEC_HIPOTECARIO);
+	}
+
+	private Double getSaldo(String registro) throws Exception {
+		try {
+			registro = insertarSeparador(registro, POS_FIN_DESC);
+			String reg[] = registro.split(";");
+			return String2Double(reg[reg.length - 1], SEP_MILES_HIPOTECARIO, SEP_DEC_HIPOTECARIO);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return SALDO_TOTAL_NO_VALIDO;
+		}
+	}
+
+	private int indexFecha(String cadena) {
+		Matcher matcher = pattern.matcher(cadena);
+		int indice = -1;
+		if (matcher.find()) {
+			indice = matcher.end();
+		}
+		if (indice <= POS_FIN_FECHA) {
+			return indice;
+		}
+		return -1;
+	}
+
 	@Override
 	protected String armarRegistro(String registro, Double saldoInicial) throws Exception {
 		String reg[] = registro.split(";");
 		String strSaldo = "";
+		String strDebito = "";
+		String strCredito = "";
 
-		Double valor = String2Double(reg[reg.length - 1], SEP_MILES, SEP_DEC);
-		Double subTotal = 0.0;
-		if (isDouble(reg[reg.length - 2])) {
-			valor = String2Double(reg[reg.length - 2], SEP_MILES, SEP_DEC);
-			subTotal = String2Double(reg[reg.length - 1], SEP_MILES, SEP_DEC);
+		Double debito = 0.0;
+		Double credito = 0.0;
+		Double subTotal = String2Double(reg[IDX_SALDO], SEP_MILES_HIPOTECARIO, SEP_DEC_HIPOTECARIO);
+		strSaldo = CommonUtils.double2String(subTotal, SEP_MILES_HIPOTECARIO, SEP_DEC_HIPOTECARIO);
 
-			if (saldoInicial == SALDO_TOTAL_NO_VALIDO) {
-				saldoInicial = subTotal - valor;
+		if (!reg[IDX_DEBITO].equals("")) {
+			debito = String2Double(reg[IDX_DEBITO], SEP_MILES_HIPOTECARIO, SEP_DEC_HIPOTECARIO);
+			strDebito = CommonUtils.double2String(debito, SEP_MILES_HIPOTECARIO, SEP_DEC_HIPOTECARIO);
+		} else {
+			if (!reg[IDX_CREDITO].equals("")) {
+				credito = String2Double(reg[IDX_CREDITO], SEP_MILES_HIPOTECARIO, SEP_DEC_HIPOTECARIO);
+				strCredito = CommonUtils.double2String(credito, SEP_MILES_HIPOTECARIO, SEP_DEC_HIPOTECARIO);
 			}
 		}
 
-		String debito = CommonUtils.double2String(valor, SEP_MILES, SEP_DEC);
-		String credito = "";
-
-		if (valor > 0) {
-			credito = debito;
-			debito = "";
-		}
-
-		if (saldoInicial != SALDO_TOTAL_NO_VALIDO) {
-
-			if (subTotal != 0) {
-				if (Math.abs(subTotal - (valor + saldoInicial)) >= 1.0) {
-					throw new ExceptionSubTotal();
-				}
+		if (subTotal != 0) {
+			if (Math.abs(subTotal - (-debito + credito + saldoInicial)) >= 1.0) {
+				throw new ExceptionSubTotal();
 			}
-
-			strSaldo = CommonUtils.double2String(valor + saldoInicial, SEP_MILES, SEP_DEC);
 		}
-		return String.format("%s;%s;%s;%s;%s;%s", reg[0], reg[1], reg[2], debito, credito, strSaldo);
+
+		return String.format("%s;%s;%s;%s;%s", reg[IDX_FECHA].trim(), reg[IDX_DESC].trim(), strDebito, strCredito, strSaldo);
 	}
 
 	protected Double darSaldoSubTotal(String registro) throws Exception {
 		String reg[] = registro.split(";");
-
-		if ((reg.length == 6) &&  !reg[reg.length - 1].trim().equals("")) {
-			return String2Double(reg[reg.length - 1], SEP_MILES, SEP_DEC);
-		}
-
-		return SALDO_TOTAL_NO_VALIDO;
-	}
-
-	private boolean isDouble(String valor) {
-		valor = valor.trim();
-		valor = valor.replace(".", "");
-		valor = valor.replace(",", ".");
-
-		return valor.matches("\\d*\\.\\d+[-+]?");
+		return String2Double(reg[IDX_SALDO], SEP_MILES_HIPOTECARIO, SEP_DEC_HIPOTECARIO);
 	}
 
 }
