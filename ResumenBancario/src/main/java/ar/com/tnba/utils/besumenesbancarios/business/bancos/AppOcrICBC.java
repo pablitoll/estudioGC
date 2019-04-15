@@ -21,9 +21,8 @@ public class AppOcrICBC extends BaseBancos {
 
 	private static final String REG_EXP_FECHA = "[0123456789]{1,3}[-]+[0123456789]{1,3}";
 	private Pattern patternFecha = Pattern.compile(REG_EXP_FECHA);
-
-	private static final String REG_EXP_VALOR = "[0123456789]+[" + SEP_DEC + "]+[0123456789]+";
-	private Pattern patternValor = Pattern.compile(REG_EXP_VALOR);
+	private ValorICBC v1 = new ValorICBC();
+	private ValorICBC v2 = new ValorICBC();
 
 	public AppOcrICBC() {
 		super(Bancos.ICBC);
@@ -86,36 +85,24 @@ public class AppOcrICBC extends BaseBancos {
 						// fecha
 						parts[i] = insertarSeparadorConTrim(parts[i], idxFinFecha);
 
-						// ultimo valor (puede ser valro o salo
-						int idx = parts[i].lastIndexOf(" ");
-						parts[i] = insertarSeparadorConTrim(parts[i], idx);
+						v1.inicializar(parts[i], -1);
 
-						idx = parts[i].lastIndexOf(";");
+						v2.inicializar(parts[i], v1.getPosFin());
 
-						// Evaluo si hay un valor u otro campo
-						int idxValor = parts[i].lastIndexOf(" ", idx);
-						String strValorTentativo = parts[i].substring(idxValor, idx);
-
-						if (esNumero(strValorTentativo)) {
-							parts[i] = insertarSeparador(parts[i], idxValor);
+						if (v2.isValido()) { // Hay un segundo valor, el anterior valor
+							parts[i] = parts[i].substring(0, v1.getPosIni()).trim() + ";" + v1.getValor() + ";" + v2.getValor();
+						} else {
+							parts[i] = parts[i].substring(0, v1.getPosIni()).trim() + ";" + v1.getValor() + ";";
 						}
-	
 					} else {
 						parts[i] = "";
 					}
 				}
-
 			}
-
 			return parts;
 		}
 
 		return null;
-	}
-
-	private boolean esNumero(String registro) {
-		Matcher matcher = patternValor.matcher(registro);
-		return matcher.find();
 	}
 
 	private int getIndiceFecha(String registro) {
