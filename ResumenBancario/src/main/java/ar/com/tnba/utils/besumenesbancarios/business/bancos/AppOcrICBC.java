@@ -9,12 +9,25 @@ import ar.com.tnba.utils.besumenesbancarios.business.bancos.BancosBusiness.Banco
 
 public class AppOcrICBC extends BaseBancos {
 
+	private static final int IDX_TOTAL_REGISTRO = 4;
+	private static final int IDX_DESC = 1;
+	private static final int IDX_FECHA = 0;
+	private static final int IDX_SUBTOTAL = 3;
+	private static final String SALDO_HOJA_ANTERIOR = "SALDO HOJA ANTERIOR";
+	private static final String SALDO_PAGINA_ANTERIOR = "SALDO PAGINA ANTERIOR";
+	private static final String SALDO_ULTIMO = "SALDO ULTIMO";
+
+	private static final int IDX_VALOR = 2;
+
+	private static final String REG_EXP_FECHA = "[0123456789]{1,3}[-]+[0123456789]{1,3}";
+	private Pattern patternFecha = Pattern.compile(REG_EXP_FECHA);
+
+	private static final String REG_EXP_VALOR = "[0123456789]+[" + SEP_DEC + "]+[0123456789]+";
+	private Pattern patternValor = Pattern.compile(REG_EXP_VALOR);
+
 	public AppOcrICBC() {
 		super(Bancos.ICBC);
 	}
-
-	private static final String REG_EXP_VISA = "[0123456789]{4,9}[ ]+[0123456789]{4,10}";
-	private Pattern pattern = Pattern.compile(REG_EXP_VISA);
 
 	@Override
 	public String[] getRegistrosFromOCR(String strOcr, File archivo, Integer pagina) throws Exception {
@@ -22,9 +35,9 @@ public class AppOcrICBC extends BaseBancos {
 		Integer vecMin[] = new Integer[3];
 
 		// inicio
-		int idxSaldoUltimo_Inicio = strOcr.lastIndexOf("SALDO ULTIMO");
-		int idxSaldoPagina_Inicio = strOcr.lastIndexOf("SALDO PAGINA ANTERIOR");
-		int idxSaldoHoja_Inicio = strOcr.lastIndexOf("SALDO HOJA ANTERIOR");
+		int idxSaldoUltimo_Inicio = strOcr.lastIndexOf(SALDO_ULTIMO);
+		int idxSaldoPagina_Inicio = strOcr.lastIndexOf(SALDO_PAGINA_ANTERIOR);
+		int idxSaldoHoja_Inicio = strOcr.lastIndexOf(SALDO_HOJA_ANTERIOR);
 
 		vecMin[0] = idxSaldoUltimo_Inicio == -1 ? NUMERO_ALTO : idxSaldoUltimo_Inicio;
 		vecMin[1] = idxSaldoHoja_Inicio == -1 ? NUMERO_ALTO : idxSaldoHoja_Inicio;
@@ -51,54 +64,47 @@ public class AppOcrICBC extends BaseBancos {
 			strOcrFormateado = strOcrFormateado.replaceAll(", ", ",");
 			strOcrFormateado = strOcrFormateado.replaceAll(" ,", ",");
 			strOcrFormateado = strOcrFormateado.replaceAll(" \\.", ".");
-			strOcrFormateado = strOcrFormateado.replaceAll("~", "");
-
-			// CASO
-			// 03-01 VISA 022019347 0022402739 0221 9.200,43
-			// 999999999+ n espacios + 9999999999
-			Matcher matcher = pattern.matcher(strOcrFormateado);
-
-			while (matcher.find()) {
-				String subVisa = strOcrFormateado.substring(matcher.start(), matcher.end());
-
-				String nuevoTexto = subVisa.replaceFirst(" ", ";");
-
-				strOcrFormateado = strOcrFormateado.replace(subVisa, nuevoTexto);
-			}
-
-			strOcrFormateado = strOcrFormateado.replace("                    ", ";");
-			strOcrFormateado = strOcrFormateado.replace("                   ", ";");
-			strOcrFormateado = strOcrFormateado.replace("                  ", ";");
-			strOcrFormateado = strOcrFormateado.replace("                 ", ";");
-			strOcrFormateado = strOcrFormateado.replace("                ", ";");
-			strOcrFormateado = strOcrFormateado.replace("               ", ";");
-			strOcrFormateado = strOcrFormateado.replace("              ", ";");
-			strOcrFormateado = strOcrFormateado.replace("             ", ";");
-			strOcrFormateado = strOcrFormateado.replace("            ", ";");
-			strOcrFormateado = strOcrFormateado.replace("           ", ";");
-			strOcrFormateado = strOcrFormateado.replace("          ", ";");
-			strOcrFormateado = strOcrFormateado.replace("         ", ";");
-			strOcrFormateado = strOcrFormateado.replace("        ", ";");
-			strOcrFormateado = strOcrFormateado.replace("       ", ";");
-			strOcrFormateado = strOcrFormateado.replace("      ", ";");
-			strOcrFormateado = strOcrFormateado.replace("     ", ";");
-			strOcrFormateado = strOcrFormateado.replace("    ", ";");
-			strOcrFormateado = strOcrFormateado.replace("   ", ";");
-			strOcrFormateado = strOcrFormateado.replace("  ", ";");
-
-			strOcrFormateado = strOcrFormateado.replace(";;", ";");
-			strOcrFormateado = strOcrFormateado.replace(";;", ";");
-			strOcrFormateado = strOcrFormateado.replace(";;", ";");
+			strOcrFormateado = strOcrFormateado.replaceAll("~", "-");
 
 			String[] parts = strOcrFormateado.split("\n");
 
-			// Saldo inicial
-			String regZero[] = parts[0].split(";");
-			saldoInicial = String2Double(regZero[regZero.length - 1], SEP_MILES, SEP_DEC);
-			parts[0] = "";
+			for (int i = 0; i < parts.length; i++) {
+				parts[i] = parts[i].trim();
+				if (parts[i].contains(SALDO_ULTIMO) || parts[i].contains(SALDO_PAGINA_ANTERIOR) || parts[i].contains(SALDO_HOJA_ANTERIOR)) {
+					int idc = parts[i].lastIndexOf(" ");
 
-			for (int i = 1; i < parts.length; i++) {
-				parts[i] = parts[i].replaceFirst(" ", ";");
+					parts[i] = insertarSeparadorConTrim(parts[i], idc);
+					String reg[] = parts[i].split(";");
+
+					saldoInicial = String2Double(reg[reg.length - 1], SEP_MILES, SEP_DEC);
+
+					parts[i] = "";
+				} else {
+
+					int idxFinFecha = getIndiceFecha(parts[i]);
+					if (idxFinFecha != -1) {
+						// fecha
+						parts[i] = insertarSeparadorConTrim(parts[i], idxFinFecha);
+
+						// ultimo valor (puede ser valro o salo
+						int idx = parts[i].lastIndexOf(" ");
+						parts[i] = insertarSeparadorConTrim(parts[i], idx);
+
+						idx = parts[i].lastIndexOf(";");
+
+						// Evaluo si hay un valor u otro campo
+						int idxValor = parts[i].lastIndexOf(" ", idx);
+						String strValorTentativo = parts[i].substring(idxValor, idx);
+
+						if (esNumero(strValorTentativo)) {
+							parts[i] = insertarSeparador(parts[i], idxValor);
+						}
+	
+					} else {
+						parts[i] = "";
+					}
+				}
+
 			}
 
 			return parts;
@@ -107,20 +113,31 @@ public class AppOcrICBC extends BaseBancos {
 		return null;
 	}
 
+	private boolean esNumero(String registro) {
+		Matcher matcher = patternValor.matcher(registro);
+		return matcher.find();
+	}
+
+	private int getIndiceFecha(String registro) {
+		Matcher matcher = patternFecha.matcher(registro);
+		if (matcher.find()) {
+			return matcher.end();
+		}
+
+		return -1;
+	}
+
 	@Override
 	protected String armarRegistro(String registro, Double saldoInicial) throws Exception {
 		String reg[] = registro.split(";");
 		String strSaldo = "";
 
-		Double valor = String2Double(reg[reg.length - 1], SEP_MILES, SEP_DEC);
-		Double subTotal = 0.0;
-		if (isDouble(reg[reg.length - 2])) {
-			valor = String2Double(reg[reg.length - 2], SEP_MILES, SEP_DEC);
-			subTotal = String2Double(reg[reg.length - 1], SEP_MILES, SEP_DEC);
+		Double valor = String2Double(reg[IDX_VALOR], SEP_MILES, SEP_DEC);
 
-			if (saldoInicial == SALDO_TOTAL_NO_VALIDO) {
-				saldoInicial = subTotal - valor;
-			}
+		Double subTotal = SALDO_TOTAL_NO_VALIDO;
+		if ((reg.length == IDX_SUBTOTAL + 1) && !reg[IDX_SUBTOTAL].equals("")) {
+			subTotal = String2Double(reg[IDX_SUBTOTAL], SEP_MILES, SEP_DEC);
+			strSaldo = CommonUtils.double2String(subTotal, SEP_MILES, SEP_DEC);
 		}
 
 		String debito = CommonUtils.double2String(valor, SEP_MILES, SEP_DEC);
@@ -133,7 +150,7 @@ public class AppOcrICBC extends BaseBancos {
 
 		if (saldoInicial != SALDO_TOTAL_NO_VALIDO) {
 
-			if (subTotal != 0) {
+			if (subTotal != SALDO_TOTAL_NO_VALIDO) {
 				if (Math.abs(subTotal - (valor + saldoInicial)) >= 1.0) {
 					throw new ExceptionSubTotal();
 				}
@@ -141,25 +158,31 @@ public class AppOcrICBC extends BaseBancos {
 
 			strSaldo = CommonUtils.double2String(valor + saldoInicial, SEP_MILES, SEP_DEC);
 		}
-		return String.format("%s;%s;%s;%s;%s;%s", reg[0], reg[1], reg[2], debito, credito, strSaldo);
+		return String.format("%s;%s;%s;%s;%s", reg[IDX_FECHA].trim(), trimInterno(reg[IDX_DESC]), debito, credito, strSaldo);
 	}
 
 	protected Double darSaldoSubTotal(String registro) throws Exception {
 		String reg[] = registro.split(";");
 
-		if ((reg.length == 6) &&  !reg[reg.length - 1].trim().equals("")) {
-			return String2Double(reg[reg.length - 1], SEP_MILES, SEP_DEC);
+		if ((reg.length == IDX_TOTAL_REGISTRO + 1)) { // no hay agregado msg de error
+			return String2Double(reg[IDX_TOTAL_REGISTRO], SEP_MILES, SEP_DEC);
 		}
 
 		return SALDO_TOTAL_NO_VALIDO;
 	}
 
-	private boolean isDouble(String valor) {
-		valor = valor.trim();
-		valor = valor.replace(".", "");
-		valor = valor.replace(",", ".");
+	@Override
+	protected Double darSaldoSubTotalFromErrror(String registro) {
+		String reg[] = registro.split(";");
 
-		return valor.matches("\\d*\\.\\d+[-+]?");
+		if ((reg.length == IDX_SUBTOTAL + 1)) {
+			try {
+				return String2Double(reg[IDX_SUBTOTAL], SEP_MILES, SEP_DEC);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+
+		return SALDO_TOTAL_NO_VALIDO;
 	}
-
 }

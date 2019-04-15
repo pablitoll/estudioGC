@@ -110,6 +110,7 @@ public abstract class BaseBancos {
 	protected String insertarSeparadorConTrim(String valor, int pos, String cadena) {
 		return valor.substring(0, pos).trim() + cadena + valor.substring(pos, valor.length()).trim();
 	}
+
 	protected String insertarSeparadorConTrim(String valor, int pos) {
 		return insertarSeparadorConTrim(valor, pos, ";");
 	}
@@ -138,5 +139,15 @@ public abstract class BaseBancos {
 		valor = valor.substring(0, valor.length() - 2) + sepDec + CommonUtils.strRigth(valor, 2);
 
 		return CommonUtils.String2Double(valor, sepMiles, sepDec);
+	}
+
+	protected String trimInterno(String registro) {
+		String retorno = "";
+		for (String reg : registro.trim().split(" ")) {
+			if (reg.length() > 1) {
+				retorno += reg + " ";
+			}
+		}
+		return retorno.trim();
 	}
 }

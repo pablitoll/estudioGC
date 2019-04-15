@@ -75,11 +75,11 @@ public class AppOcrBBVA extends BaseBancos {
 	@Override
 	protected String armarRegistro(String registro, Double saldoInicial) throws Exception {
 
-		registro = insertarSeparador(registro, POS_FECHA);
+		registro = insertarSeparadorConTrim(registro, POS_FECHA);
 		int finmovi = registro.lastIndexOf(" ");
-		registro = insertarSeparador(registro, finmovi);
+		registro = insertarSeparadorConTrim(registro, finmovi);
 		int inimovi = registro.lastIndexOf(" ", finmovi);
-		registro = insertarSeparador(registro, inimovi);
+		registro = insertarSeparadorConTrim(registro, inimovi);
 
 		String rengistroSplit[] = registro.split(";");
 		// ya tengo el registro spliteado en registroSplit, de ahora sigo con ese

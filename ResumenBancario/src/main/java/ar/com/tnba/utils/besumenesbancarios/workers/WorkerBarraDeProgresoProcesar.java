@@ -52,8 +52,8 @@ public class WorkerBarraDeProgresoProcesar extends WorkerBarraDeProgresoBase imp
 			while (nroHoja <= listaARchivoOCR.size() && !cancelar) {
 
 				if (hayHiloLibre()) {
-					// TODO SACAR
-//					if (nroHoja == 2) {
+					// TODO SACAR DEBUG
+//					if (nroHoja == 3) {
 						File archivoOCR = listaARchivoOCR.get(nroHoja - 1);
 						pantalla.setTitle(String.format("%s - %s - %s Hojas", archivoProcesar.getBanco().getNombre(), archivoProcesar.getNombreArchivo(), listaARchivoOCR.size()));
 						Hilo hiloLibre = new Hilo(archivoOCR, nroHoja, listaARchivoOCR.size(), archivoProcesar, this, chunk, directorioDestino);
