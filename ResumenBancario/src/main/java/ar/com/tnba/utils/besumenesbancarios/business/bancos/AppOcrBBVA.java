@@ -109,13 +109,11 @@ public class AppOcrBBVA extends BaseBancos {
 
 	@Override
 	protected ITesseract getInstanceTesseract(File archivoOCR) {
-		if (tesseract == null) {
-			tesseract = new Tesseract1(); // JNA Direct Mapping
-			tesseract.setDatapath(archivoOCR.getParent() + File.separator + "temp\\tessdata"); // path to tessdata directory
-			File tessDataFolder = LoadLibs.extractNativeResources("tessdata");
-			tesseract.setDatapath(tessDataFolder.getAbsolutePath());
-		}
-		return tesseract;
+		Tesseract1 instanceFrances = new Tesseract1(); // JNA Direct Mapping
+		instanceFrances.setDatapath("c:\\temp\\tessdata"); // path to tessdata directory
+		File tessDataFolder = LoadLibs.extractNativeResources("tessdata");
+		//instanceFrances.setDatapath(tessDataFolder.getAbsolutePath());
+		return instanceFrances;
 	}
 
 }
