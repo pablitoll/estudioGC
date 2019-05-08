@@ -6,7 +6,6 @@ import java.util.regex.Pattern;
 
 import ar.com.rp.rpcutils.CommonUtils;
 import ar.com.tnba.utils.besumenesbancarios.business.bancos.BancosBusiness.Bancos;
-import net.sourceforge.lept4j.util.LoadLibs;
 import net.sourceforge.tess4j.ITesseract;
 import net.sourceforge.tess4j.Tesseract1;
 
@@ -174,19 +173,26 @@ public class AppOcrRio extends BaseBancos {
 	protected ITesseract getInstanceTesseract(File archivoOCR) {
 		if (tesseract == null) {
 			tesseract = new Tesseract1(); // JNA Direct Mapping
-			//tesseract.setTessVariable("preserve_interword_spaces", "1");
-			
-		//	instanceFrances // path to tessdata directory
-			File tessDataFolder = LoadLibs.extractNativeResources("tessdata");
-			//instanceFrances.setDatapath(tessDataFolder.getAbsolutePath());
-		
-			
-			
-			tesseract.setDatapath("c:\\temp\\tessdata");//.setDatapath(archivoOCR.getParent() + File.separator + "temp\\tessdata"); // path to tessdata directory
-			//File tessDataFolder = LoadLibs.extractNativeResources("tessdata");
-			//tesseract.setDatapath(tessDataFolder.getAbsolutePath());
+			tesseract.setDatapath("c:\\temp\\tessdata");
 		}
-		return tesseract;	}
+		return tesseract;
+	}
+	/*
+	 * @Override protected ITesseract getInstanceTesseract(File archivoOCR) { if
+	 * (tesseract == null) { tesseract = new Tesseract1(); // JNA Direct Mapping //
+	 * tesseract.setTessVariable("preserve_interword_spaces", "1");
+	 * 
+	 * // instanceFrances // path to tessdata directory // File tessDataFolder =
+	 * LoadLibs.extractNativeResources("tessdata"); //
+	 * instanceFrances.setDatapath(tessDataFolder.getAbsolutePath());
+	 * 
+	 * tesseract.setDatapath("c:\\temp\\tessdata");//
+	 * .setDatapath(archivoOCR.getParent() + File.separator + "temp\\tessdata"); //
+	 * // path to tessdata directory // File tessDataFolder =
+	 * LoadLibs.extractNativeResources("tessdata"); //
+	 * tesseract.setDatapath(tessDataFolder.getAbsolutePath()); } return tesseract;
+	 * }
+	 */
 
 	@Override
 	protected Double darSaldoSubTotalFromErrror(String registro) {

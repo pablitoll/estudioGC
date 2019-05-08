@@ -156,8 +156,9 @@ public class PantallaPrincipal extends JFrame {
 	}
 
 	public void iniciar() {
-		PantallaPrincipalControlador.cargaPantalla(txtDescArticulo, tree, this);
 		setVisible(true);
+		PantallaPrincipalControlador.cargaPantalla(txtDescArticulo, tree, this);
+		
 	}
 
 	// public boolean presionoTecla(KeyEvent ke) {

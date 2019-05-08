@@ -5,7 +5,6 @@ import java.io.File;
 import ar.com.rp.rpcutils.CommonUtils;
 import ar.com.tnba.utils.besumenesbancarios.business.LogManager;
 import ar.com.tnba.utils.besumenesbancarios.business.bancos.BancosBusiness.Bancos;
-import net.sourceforge.lept4j.util.LoadLibs;
 import net.sourceforge.tess4j.ITesseract;
 import net.sourceforge.tess4j.Tesseract1;
 
@@ -36,9 +35,11 @@ public abstract class BaseBancos {
 		if (tesseract == null) {
 			tesseract = new Tesseract1(); // JNA Direct Mapping
 			tesseract.setTessVariable("preserve_interword_spaces", "1");
-			tesseract.setDatapath(archivoOCR.getParent() + File.separator + "temp\\tessdata"); // path to tessdata directory
-			File tessDataFolder = LoadLibs.extractNativeResources("tessdata");
-			tesseract.setDatapath(tessDataFolder.getAbsolutePath());
+			
+			//tesseract.setDatapath(archivoOCR.getParent() + File.separator + "temp\\tessdata"); // path to tessdata directory			
+			tesseract.setDatapath("c:\\temp\\tessdata");
+			//File tessDataFolder = LoadLibs.extractNativeResources("tessdata");
+			//tesseract.setDatapath(tessDataFolder.getAbsolutePath());
 		}
 		return tesseract;
 	}
