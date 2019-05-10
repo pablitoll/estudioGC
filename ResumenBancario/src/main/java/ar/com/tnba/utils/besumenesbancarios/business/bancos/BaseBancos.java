@@ -35,11 +35,12 @@ public abstract class BaseBancos {
 		if (tesseract == null) {
 			tesseract = new Tesseract1(); // JNA Direct Mapping
 			tesseract.setTessVariable("preserve_interword_spaces", "1");
-			
-			//tesseract.setDatapath(archivoOCR.getParent() + File.separator + "temp\\tessdata"); // path to tessdata directory			
+
+			// tesseract.setDatapath(archivoOCR.getParent() + File.separator +
+			// "temp\\tessdata"); // path to tessdata directory
 			tesseract.setDatapath("c:\\temp\\tessdata");
-			//File tessDataFolder = LoadLibs.extractNativeResources("tessdata");
-			//tesseract.setDatapath(tessDataFolder.getAbsolutePath());
+			// File tessDataFolder = LoadLibs.extractNativeResources("tessdata");
+			// tesseract.setDatapath(tessDataFolder.getAbsolutePath());
 		}
 		return tesseract;
 	}
@@ -130,7 +131,7 @@ public abstract class BaseBancos {
 			valor = "-" + valor.substring(0, valor.length() - 1);
 		}
 
-		valor = valor.replaceAll(" ", "").replaceAll(" .", ".").replaceAll(" ,", ",");
+		valor = valor.replaceAll(" ", "").replaceAll(" .", ".").replaceAll(" ,", ",").replaceAll("o", "0").replaceAll("O", "0");
 		if (valor.indexOf(sepDec) != -1) {
 			valor = valor + "0000000";
 			valor = valor.substring(0, valor.indexOf(sepDec) + 3);
