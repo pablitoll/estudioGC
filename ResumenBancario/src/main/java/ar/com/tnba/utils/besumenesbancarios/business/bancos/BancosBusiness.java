@@ -20,7 +20,8 @@ public class BancosBusiness {
 		PATAGONIA("00034", "BancoPatagonia", "BANCO PATAGONIA S.A.", 64, AppOcrPatagonia.class),
 		RIO("00072", "BancoRio", "BANCO SANTANDER RIO S.A.", 72, AppOcrRio.class),
 		HIPOTECARIO("00044", "BancoHipotecario", "BANCO HIPOTECARIO S.A.", 44, AppOcrHipotecario.class),
-		CIUDAD("00029", "BancoCiudad", "BANCO DE LA CIUDAD DE BUENOS AIRES", 29, AppOcrCiudad.class);
+		CIUDAD("00029", "BancoCiudad", "BANCO DE LA CIUDAD DE BUENOS AIRES", 29, AppOcrCiudad.class),
+		GALICIA("00007", "BancoGalicia", "BANCO DE GALICIA Y BUENOS AIRES S.A.U.", 7, AppOcrGalicia.class);
 		
 		private String codigo;
 		private String directorio;

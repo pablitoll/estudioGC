@@ -38,7 +38,7 @@ public abstract class BaseBancos {
 
 			// tesseract.setDatapath(archivoOCR.getParent() + File.separator +
 			// "temp\\tessdata"); // path to tessdata directory
-			tesseract.setDatapath("c:\\temp\\tessdata");
+			tesseract.setDatapath("C:\\temp\\tessdata");
 			// File tessDataFolder = LoadLibs.extractNativeResources("tessdata");
 			// tesseract.setDatapath(tessDataFolder.getAbsolutePath());
 		}
@@ -53,6 +53,11 @@ public abstract class BaseBancos {
 	public String procesarArchivo(String strOcr, File archivo, Integer nroPagina) throws Exception {
 		System.out.println(String.format("Procesando %s: %s - Pagina %s ", banco.getNombre(), archivo.getName(), nroPagina));
 
+		//TODO SACAR
+//		if(nroPagina != 2) {
+//			return "";
+//		}
+		
 		String[] registros = getRegistrosFromOCR(strOcr, archivo, nroPagina);
 		if (registros != null) {
 			StringBuilder retorno = new StringBuilder();
