@@ -28,7 +28,7 @@ public class ArchivoDePropiedadesBusiness {
 	}
 
 	public static int getCantHilos() throws Exception {
-		return Integer.valueOf(getPropiedades().getPropiedad(propiedades.cantHilos, "3"));
+		return Integer.valueOf(getPropiedades().getPropiedad(propiedades.cantHilos, "3")); 
 	}
 
 	public static void setDirectorioDeTrabajo(String path) throws Exception {

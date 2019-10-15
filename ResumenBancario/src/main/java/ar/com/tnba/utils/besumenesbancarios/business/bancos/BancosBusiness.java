@@ -21,7 +21,9 @@ public class BancosBusiness {
 		RIO("00072", "BancoRio", "BANCO SANTANDER RIO S.A.", 72, AppOcrRio.class),
 		HIPOTECARIO("00044", "BancoHipotecario", "BANCO HIPOTECARIO S.A.", 44, AppOcrHipotecario.class),
 		CIUDAD("00029", "BancoCiudad", "BANCO DE LA CIUDAD DE BUENOS AIRES", 29, AppOcrCiudad.class),
-		GALICIA("00007", "BancoGalicia", "BANCO DE GALICIA Y BUENOS AIRES S.A.U.", 7, AppOcrGalicia.class);
+		GALICIA("00007", "BancoGalicia", "BANCO DE GALICIA Y BUENOS AIRES S.A.U.", 7, AppOcrGalicia.class),
+		PROVINCIA("00014", "BancoProvincia", "BANCO DE LA PROVINCIA DE BUENOS AIRES", 14, AppOcrProvincia.class),
+		ITAU("00259", "BancoItau", "BANCO ITAU ARGENTINA S.A.", 259, AppOcrITAU.class);
 		
 		private String codigo;
 		private String directorio;

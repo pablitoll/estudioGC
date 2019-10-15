@@ -1,6 +1,9 @@
 package ar.com.tnba.utils.besumenesbancarios.business;
 
+
 public class ConstantesTool {
+	//TODO DEBUG, poner en 0 para que no debuue
+	public static int DEBUG_HOJA = 0;
 
 	public static String IMG_SEARCH = "images/search.png";
 	public static String IMG_EXCEL = "images/ExcelIcono.png";

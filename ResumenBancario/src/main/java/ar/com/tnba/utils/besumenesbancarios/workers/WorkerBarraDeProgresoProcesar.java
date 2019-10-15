@@ -12,6 +12,7 @@ import org.apache.commons.io.FileUtils;
 import ar.com.rp.rpcutils.ExceptionUtils;
 import ar.com.tnba.utils.besumenesbancarios.business.ArchivoDePropiedadesBusiness;
 import ar.com.tnba.utils.besumenesbancarios.business.CommonResumenBancario;
+import ar.com.tnba.utils.besumenesbancarios.business.ConstantesTool;
 import ar.com.tnba.utils.besumenesbancarios.business.ConvertPDFtoTIFF;
 import ar.com.tnba.utils.besumenesbancarios.business.ManejoDeArchivos;
 import ar.com.tnba.utils.besumenesbancarios.dto.ArchivoProcesar;
@@ -20,7 +21,7 @@ import ar.com.tnba.utils.besumenesbancarios.ui.BarraDeProgreso;
 public class WorkerBarraDeProgresoProcesar extends WorkerBarraDeProgresoBase implements CallBackWorker {
 
 	private final int CANT_HILO_MAX = ArchivoDePropiedadesBusiness.getCantHilos();
-	private static final int SIZE_SLOT_CHUNK = 100000;
+	private static final int SIZE_SLOT_CHUNK = 100000;	
 	private Boolean huboErroresDeCajaCerrada = false;
 	private List<ArchivoProcesar> listaArchivoProcesar;
 	private List<Hilo> listaHilos = new ArrayList<Hilo>();
@@ -52,8 +53,7 @@ public class WorkerBarraDeProgresoProcesar extends WorkerBarraDeProgresoBase imp
 			while (nroHoja <= listaARchivoOCR.size() && !cancelar) {
 
 				if (hayHiloLibre()) {
-					// TODO SACAR DEBUG
-//					if (nroHoja == 2) {
+					if ((ConstantesTool.DEBUG_HOJA == 0) || (ConstantesTool.DEBUG_HOJA == nroHoja)) {
 						File archivoOCR = listaARchivoOCR.get(nroHoja - 1);
 						pantalla.setTitle(String.format("%s - %s - %s Hojas", archivoProcesar.getBanco().getNombre(), archivoProcesar.getNombreArchivo(), listaARchivoOCR.size()));
 						Hilo hiloLibre = new Hilo(archivoOCR, nroHoja, listaARchivoOCR.size(), archivoProcesar, this, chunk, directorioDestino);
@@ -61,7 +61,7 @@ public class WorkerBarraDeProgresoProcesar extends WorkerBarraDeProgresoBase imp
 						listaHilos.add(hiloLibre);
 						hiloLibre.start();
 						wait(500);
-//					}
+					}
 					nroHoja++;
 				} else {
 					wait(4000);
@@ -102,7 +102,6 @@ public class WorkerBarraDeProgresoProcesar extends WorkerBarraDeProgresoBase imp
 	}
 
 	private int getCantHilosMax() {
-		// TODO terminar
 		return CANT_HILO_MAX;
 	}
 

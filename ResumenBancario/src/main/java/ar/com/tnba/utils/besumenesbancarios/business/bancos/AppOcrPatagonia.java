@@ -1,17 +1,21 @@
 package ar.com.tnba.utils.besumenesbancarios.business.bancos;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.imageio.ImageIO;
+
 import ar.com.rp.rpcutils.CommonUtils;
 import ar.com.tnba.utils.besumenesbancarios.business.bancos.BancosBusiness.Bancos;
+import ar.com.tnba.utils.besumenesbancarios.business.procesarImagen.SoloNegroICBC;
 
 public class AppOcrPatagonia extends BaseBancos {
 
 	private static final int POS_FIN_DES = 40;
-	private static final int POS_FIN_DEBITO = 80;
-	private static final int POS_FIN_CREDITO = 100;
+	private static final int POS_FIN_DEBITO = 84;
+	private static final int POS_FIN_CREDITO = 106; //100
 	private static final int POS_FIN_TOTAL = 120;
 	private static final int POS_FIN_FECHA = 8;
 	private static final int POS_FIN_COMP = 62;
@@ -19,16 +23,37 @@ public class AppOcrPatagonia extends BaseBancos {
 	private Pattern patternHeaderFecha = Pattern.compile(HEADER_FECHA);
 
 	private static final String FOOTER_SALDO = "SALDO ACTUAL";
-	private static final String FOOTER_FIN = "Si usted reviste el caracter de consumidor final, no responsable o exento frente al IVA,";
+	private static final String FOOTER_FIN = "Si usted reviste el caracter de consumidor final, no responsable";											  
 	private static final String SALDO_ANTERIOR = "SALDO ANTERIOR";
 
 	public AppOcrPatagonia() {
 		super(Bancos.PATAGONIA);
 	}
+	
+	@Override
+	public String getOCR(File archivoOCR) throws Exception {
+
+		System.out.println("Procesando OCR (PATAGONIA): " + archivoOCR.getName());
+		BufferedImage bi = SoloNegroICBC.procesar(archivoOCR);
+
+		try {
+			System.out.println();
+			String nombreCopia = archivoOCR.getAbsolutePath().substring(0, archivoOCR.getAbsolutePath().length() - 4) + ".imagenProcesada"
+					+ archivoOCR.getAbsolutePath().substring(archivoOCR.getAbsolutePath().length() - 4);
+			File fileImagenProcesda = new File(nombreCopia);
+			ImageIO.write(bi, "jpg", fileImagenProcesda);
+		} catch (Exception e) {
+			System.out.println(e);
+		}
+
+		return getInstanceTesseract(archivoOCR).doOCR(bi);
+	}
 
 	public String[] getRegistrosFromOCR(String strOcr, File archivo, Integer pagina) throws Exception {
 		String strOcrFormateado = "";
-
+		strOcr = strOcr.replaceAll("~", "");
+		strOcr = strOcr.replaceAll("§", "");		
+		
 		Matcher m = patternHeaderFecha.matcher(strOcr);
 		int idxInicio = -1;
 		if (m.find()) {
@@ -36,12 +61,13 @@ public class AppOcrPatagonia extends BaseBancos {
 		}
 
 		// fin
-		Integer vecMin[] = new Integer[2];
+		Integer vecMin[] = new Integer[3];
 		int idxSaldo_Fin = strOcr.indexOf(FOOTER_SALDO);
 		int idxFin_Fin = strOcr.indexOf(FOOTER_FIN);
 
 		vecMin[0] = idxSaldo_Fin == -1 ? NUMERO_ALTO : idxSaldo_Fin;
 		vecMin[1] = idxFin_Fin == -1 ? NUMERO_ALTO : idxFin_Fin;
+		vecMin[2] = strOcr.length();
 
 		Integer idxFinal = CommonUtils.minimo(vecMin);
 
@@ -52,7 +78,7 @@ public class AppOcrPatagonia extends BaseBancos {
 			strOcrFormateado = strOcrFormateado.replaceAll(", ", ",");
 			strOcrFormateado = strOcrFormateado.replaceAll(" ,", ",");
 			strOcrFormateado = strOcrFormateado.replaceAll(" \\.", ".");
-			strOcrFormateado = strOcrFormateado.replaceAll("~", "");
+			
 
 			String[] parts = strOcrFormateado.split("\n");
 

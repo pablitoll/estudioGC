@@ -42,7 +42,7 @@ public class AppOcrCiudad extends BaseBancos {
 
 			// ALTA NEGRADA
 			strOcrFormateado = strOcrFormateado.replaceAll(", ", ",");
-			strOcrFormateado = strOcrFormateado.replaceAll("\\-N\\w*V\\-", "-NOV-");
+			strOcrFormateado = strOcrFormateado.replaceAll("\\-N\\w*V\\-", "-NOV-");			
 			strOcrFormateado = strOcrFormateado.replaceAll("\\.,", ".");
 			strOcrFormateado = strOcrFormateado.replaceAll(" ,", ",");
 			strOcrFormateado = strOcrFormateado.replaceAll("[0123456789] -", "-");

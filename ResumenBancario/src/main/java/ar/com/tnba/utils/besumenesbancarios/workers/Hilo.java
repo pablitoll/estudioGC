@@ -68,6 +68,8 @@ public class Hilo extends Thread {
 
 			} catch (Exception e) {
 				e.printStackTrace();
+				
+				
 				hayError = true;
 
 				try {

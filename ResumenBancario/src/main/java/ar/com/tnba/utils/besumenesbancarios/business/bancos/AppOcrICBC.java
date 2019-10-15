@@ -1,23 +1,29 @@
 package ar.com.tnba.utils.besumenesbancarios.business.bancos;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.imageio.ImageIO;
+
 import ar.com.rp.rpcutils.CommonUtils;
 import ar.com.tnba.utils.besumenesbancarios.business.bancos.BancosBusiness.Bancos;
+import ar.com.tnba.utils.besumenesbancarios.business.procesarImagen.SoloNegroICBC;
 
 public class AppOcrICBC extends BaseBancos {
 
 	private static final int IDX_TOTAL_REGISTRO = 4;
-	private static final int IDX_DESC = 1;
-	private static final int IDX_FECHA = 0;
-	private static final int IDX_SUBTOTAL = 3;
+	private static final int IDX_REG_DESC = 1;
+	private static final int IDX_REG_FECHA = 0;
+	private static final int IDX_REG_DEBITO = 2;
+	private static final int IDX_REG_CREDITO = 3;
+	private static final int IDX_REG_SUBTOTAL = 4;
+
 	private static final String SALDO_HOJA_ANTERIOR = "SALDO HOJA ANTERIOR";
 	private static final String SALDO_PAGINA_ANTERIOR = "SALDO PAGINA ANTERIOR";
 	private static final String SALDO_ULTIMO = "SALDO ULTIMO";
 
-	private static final int IDX_VALOR = 2;
 
 	private static final String REG_EXP_FECHA = "[0123456789]{1,3}[-]+[0123456789]{1,3}";
 	private Pattern patternFecha = Pattern.compile(REG_EXP_FECHA);
@@ -26,6 +32,24 @@ public class AppOcrICBC extends BaseBancos {
 
 	public AppOcrICBC() {
 		super(Bancos.ICBC);
+	}
+
+	@Override
+	public String getOCR(File archivoOCR) throws Exception {
+
+		System.out.println("Procesando OCR (ICBC): " + archivoOCR.getName());
+		BufferedImage bi = SoloNegroICBC.procesar(archivoOCR);
+		try {
+			System.out.println();
+			String nombreCopia = archivoOCR.getAbsolutePath().substring(0, archivoOCR.getAbsolutePath().length() - 4) + ".imagenProcesada"
+					+ archivoOCR.getAbsolutePath().substring(archivoOCR.getAbsolutePath().length() - 4);
+			File fileImagenProcesda = new File(nombreCopia);
+			ImageIO.write(bi, "jpg", fileImagenProcesda);
+		} catch (Exception e) {
+			System.out.println(e);
+		}
+
+		return getInstanceTesseract(archivoOCR).doOCR(bi);
 	}
 
 	@Override
@@ -55,7 +79,9 @@ public class AppOcrICBC extends BaseBancos {
 
 		Integer idxFinal = CommonUtils.minimo(vecMin);
 
-		if ((idxInicio != NUMERO_ALTO) && (idxFinal != NUMERO_ALTO) && (idxInicio < idxFinal)) {
+		if ((idxInicio != NUMERO_ALTO) && (idxFinal != NUMERO_ALTO) &&
+
+				(idxInicio < idxFinal)) {
 
 			strOcrFormateado = strOcr.substring(idxInicio, idxFinal);
 
@@ -64,7 +90,6 @@ public class AppOcrICBC extends BaseBancos {
 			strOcrFormateado = strOcrFormateado.replaceAll(" ,", ",");
 			strOcrFormateado = strOcrFormateado.replaceAll(" \\.", ".");
 			strOcrFormateado = strOcrFormateado.replaceAll("~", "-");
-
 			String[] parts = strOcrFormateado.split("\n");
 
 			for (int i = 0; i < parts.length; i++) {
@@ -79,21 +104,25 @@ public class AppOcrICBC extends BaseBancos {
 
 					parts[i] = "";
 				} else {
-
 					int idxFinFecha = getIndiceFecha(parts[i]);
 					if (idxFinFecha != -1) {
 						// fecha
 						parts[i] = insertarSeparadorConTrim(parts[i], idxFinFecha);
+						v1.inicializar(parts[i], -1, false);
 
-						v1.inicializar(parts[i], -1);
+						v2.inicializar(parts[i], v1.getPosFin(), true);
 
-						v2.inicializar(parts[i], v1.getPosFin());
-
-						if (v2.isValido()) { // Hay un segundo valor, el anterior valor
-							parts[i] = parts[i].substring(0, v1.getPosIni()).trim() + ";" + v1.getValor() + ";" + v2.getValor();
+						parts[i] = parts[i].substring(0, v1.getPosIni()).trim() + ";";
+						if (v1.isDebito()) {
+							parts[i] += v1.getValor() + ";";
 						} else {
-							parts[i] = parts[i].substring(0, v1.getPosIni()).trim() + ";" + v1.getValor() + ";";
+							parts[i] += ";" + v1.getValor();
 						}
+						parts[i] += ";";
+						if (v2.isValido()) { // Hay un segundo valor, el anterior valor
+							parts[i] += v2.getValor();
+						}
+
 					} else {
 						parts[i] = "";
 					}
@@ -119,33 +148,36 @@ public class AppOcrICBC extends BaseBancos {
 		String reg[] = registro.split(";");
 		String strSaldo = "";
 
-		Double valor = String2Double(reg[IDX_VALOR], SEP_MILES, SEP_DEC);
-
 		Double subTotal = SALDO_TOTAL_NO_VALIDO;
-		if ((reg.length == IDX_SUBTOTAL + 1) && !reg[IDX_SUBTOTAL].equals("")) {
-			subTotal = String2Double(reg[IDX_SUBTOTAL], SEP_MILES, SEP_DEC);
+		if ((reg.length == IDX_REG_SUBTOTAL + 1) && !reg[IDX_REG_SUBTOTAL].equals("")) {
+			subTotal = String2Double(reg[IDX_REG_SUBTOTAL], SEP_MILES, SEP_DEC);
 			strSaldo = CommonUtils.double2String(subTotal, SEP_MILES, SEP_DEC);
 		}
-
-		String debito = CommonUtils.double2String(valor, SEP_MILES, SEP_DEC);
-		String credito = "";
-
-		if (valor > 0) {
-			credito = debito;
-			debito = "";
-		}
+		
+		Double debito = 0.0;
+		Double credito = 0.0;
+		String strDebito = "";
+		String strCredito = "";
+		if(!reg[IDX_REG_DEBITO].trim().equals("")) {
+			// hay debito
+			debito = String2Double(reg[IDX_REG_DEBITO], SEP_MILES, SEP_DEC);
+			strDebito = CommonUtils.double2String(debito, SEP_MILES, SEP_DEC);			
+		} else {
+			credito = String2Double(reg[IDX_REG_CREDITO], SEP_MILES, SEP_DEC);
+			strCredito= CommonUtils.double2String(credito, SEP_MILES, SEP_DEC);						
+		}		
 
 		if (saldoInicial != SALDO_TOTAL_NO_VALIDO) {
 
 			if (subTotal != SALDO_TOTAL_NO_VALIDO) {
-				if (Math.abs(subTotal - (valor + saldoInicial)) >= 1.0) {
+				if (Math.abs(subTotal - (-debito + credito + saldoInicial)) >= 1.0) {
 					throw new ExceptionSubTotal();
 				}
 			}
 
-			strSaldo = CommonUtils.double2String(valor + saldoInicial, SEP_MILES, SEP_DEC);
+			strSaldo = CommonUtils.double2String(-debito + credito+ saldoInicial, SEP_MILES, SEP_DEC);
 		}
-		return String.format("%s;%s;%s;%s;%s", reg[IDX_FECHA].trim(), trimInterno(reg[IDX_DESC]), debito, credito, strSaldo);
+		return String.format("%s;%s;%s;%s;%s", reg[IDX_REG_FECHA].trim(), trimInterno(reg[IDX_REG_DESC]), strDebito, strCredito, strSaldo);
 	}
 
 	protected Double darSaldoSubTotal(String registro) throws Exception {
@@ -162,9 +194,9 @@ public class AppOcrICBC extends BaseBancos {
 	protected Double darSaldoSubTotalFromErrror(String registro) {
 		String reg[] = registro.split(";");
 
-		if ((reg.length == IDX_SUBTOTAL + 1)) {
+		if ((reg.length == IDX_REG_SUBTOTAL + 1)) {
 			try {
-				return String2Double(reg[IDX_SUBTOTAL], SEP_MILES, SEP_DEC);
+				return String2Double(reg[IDX_REG_SUBTOTAL], SEP_MILES, SEP_DEC);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
