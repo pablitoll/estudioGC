@@ -24,7 +24,6 @@ public class AppOcrICBC extends BaseBancos {
 	private static final String SALDO_PAGINA_ANTERIOR = "SALDO PAGINA ANTERIOR";
 	private static final String SALDO_ULTIMO = "SALDO ULTIMO";
 
-
 	private static final String REG_EXP_FECHA = "[0123456789]{1,3}[-]+[0123456789]{1,3}";
 	private Pattern patternFecha = Pattern.compile(REG_EXP_FECHA);
 	private ValorICBC v1 = new ValorICBC();
@@ -100,7 +99,7 @@ public class AppOcrICBC extends BaseBancos {
 					parts[i] = insertarSeparadorConTrim(parts[i], idc);
 					String reg[] = parts[i].split(";");
 
-					saldoInicial = String2Double(reg[reg.length - 1], SEP_MILES, SEP_DEC);
+					saldoInicial = String2Double(ValorICBC.formatear(reg[reg.length - 1]), SEP_MILES, SEP_DEC);
 
 					parts[i] = "";
 				} else {
@@ -153,29 +152,29 @@ public class AppOcrICBC extends BaseBancos {
 			subTotal = String2Double(reg[IDX_REG_SUBTOTAL], SEP_MILES, SEP_DEC);
 			strSaldo = CommonUtils.double2String(subTotal, SEP_MILES, SEP_DEC);
 		}
-		
+
 		Double debito = 0.0;
 		Double credito = 0.0;
 		String strDebito = "";
 		String strCredito = "";
-		if(!reg[IDX_REG_DEBITO].trim().equals("")) {
+		if (!reg[IDX_REG_DEBITO].trim().equals("")) {
 			// hay debito
 			debito = String2Double(reg[IDX_REG_DEBITO], SEP_MILES, SEP_DEC);
-			strDebito = CommonUtils.double2String(debito, SEP_MILES, SEP_DEC);			
+			strDebito = CommonUtils.double2String(-1 * debito, SEP_MILES, SEP_DEC); //El debto en ICBC viene con -
 		} else {
 			credito = String2Double(reg[IDX_REG_CREDITO], SEP_MILES, SEP_DEC);
-			strCredito= CommonUtils.double2String(credito, SEP_MILES, SEP_DEC);						
-		}		
+			strCredito = CommonUtils.double2String(credito, SEP_MILES, SEP_DEC);
+		}
 
 		if (saldoInicial != SALDO_TOTAL_NO_VALIDO) {
 
 			if (subTotal != SALDO_TOTAL_NO_VALIDO) {
-				if (Math.abs(subTotal - (-debito + credito + saldoInicial)) >= 1.0) {
+				if (Math.abs(subTotal - (debito + credito + saldoInicial)) >= 1.0) {
 					throw new ExceptionSubTotal();
 				}
 			}
 
-			strSaldo = CommonUtils.double2String(-debito + credito+ saldoInicial, SEP_MILES, SEP_DEC);
+			strSaldo = CommonUtils.double2String(debito + credito + saldoInicial, SEP_MILES, SEP_DEC);
 		}
 		return String.format("%s;%s;%s;%s;%s", reg[IDX_REG_FECHA].trim(), trimInterno(reg[IDX_REG_DESC]), strDebito, strCredito, strSaldo);
 	}

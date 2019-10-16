@@ -52,14 +52,8 @@ public class ValorICBC {
 				String signo = valor.substring(valor.length() - 1, valor.length());
 				if (determinarDebito(signo)) {
 					addPromedio();
-					debito = true;
+					debito = true;				
 				}
-
-				// Saco el "-"
-				if (signo.equals("-")) {
-					valor = valor.substring(0, valor.length() - 1);
-				}
-
 			}
 		}
 	}
@@ -96,7 +90,12 @@ public class ValorICBC {
 		}
 		return "";
 	}
-	private String formatear(String valor) throws Exception {
+
+	public static String formatear(String valor) throws Exception {
+		if (valor.substring(valor.length() - 1).equals("-")) {
+			valor = "-" + valor.substring(0, valor.length() - 1);
+		}
+
 		if (valor.length() > 3) {
 
 			String puntoDecimal = valor.substring(valor.length() - 3, valor.length() - 2);
