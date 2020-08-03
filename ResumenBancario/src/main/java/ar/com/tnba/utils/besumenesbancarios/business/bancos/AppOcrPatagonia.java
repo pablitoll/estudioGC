@@ -19,11 +19,12 @@ public class AppOcrPatagonia extends BaseBancos {
 	private static final int POS_FIN_TOTAL = 120;
 	private static final int POS_FIN_FECHA = 8;
 	private static final int POS_FIN_COMP = 62;
-	private static final String HEADER_FECHA = "FECHA[ ]+CONCEPTO[ ]+REFER\\.[ ]+FECHA[ ]+VALOR[ ]+DEBITOS[ ]+CREDITOS[ ]+SALDO";
+	private static final String HEADER_FECHA = "FECHA[ ]+CON+\\S*[ ]+REFER\\.[ ]+FECHA[ ]+VALOR[ ]+DE+\\S*[ ]+CRED+\\S*[ ]+SALDO";
 	private Pattern patternHeaderFecha = Pattern.compile(HEADER_FECHA);
 
 	private static final String FOOTER_SALDO = "SALDO ACTUAL";
-	private static final String FOOTER_FIN = "Si usted reviste el caracter de consumidor final, no responsable";											  
+	private static final String FOOTER_FIN = "Si usted revis";
+	//te el caracter de consumidor final, no responsable";											  
 	private static final String SALDO_ANTERIOR = "SALDO ANTERIOR";
 
 	public AppOcrPatagonia() {

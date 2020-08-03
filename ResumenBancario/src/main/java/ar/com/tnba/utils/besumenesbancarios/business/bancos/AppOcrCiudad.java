@@ -90,6 +90,16 @@ public class AppOcrCiudad extends BaseBancos {
 								procesoRegistro = true;
 							} else {
 								parts[i] = "";
+								
+								
+								
+								
+								
+								
+								
+								
+								
+								
 							}
 						}
 					}

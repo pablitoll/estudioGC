@@ -47,6 +47,7 @@ public class WorkerBarraDeProgresoProcesar extends WorkerBarraDeProgresoBase imp
 
 			List<File> listaARchivoOCR = ConvertPDFtoTIFF.convert(archivoProcesar.getArchivo(), directorioDestino);
 			Integer nroHoja = 1;
+			
 			Integer chunk = SIZE_SLOT_CHUNK / (listaARchivoOCR.size() + 1);
 
 			avanzarbBarra(chunk);

@@ -116,7 +116,8 @@ public class AppOcrRio extends BaseBancos {
 	@Override
 	protected Double darSaldoSubTotal(String registro) throws Exception {
 		String reg[] = registro.split(";");
-		if (!reg[reg.length - 1].trim().equals(ERROR_TIPO_OPERACION) && !reg[reg.length - 1].trim().contains(LEYENDA_FALLO)) {
+		if (!reg[reg.length - 1].trim().equals(ERROR_TIPO_OPERACION)
+				&& !reg[reg.length - 1].trim().contains(LEYENDA_FALLO)) {
 			return String2Double(reg[reg.length - 1].trim(), SEP_MILES, SEP_DEC);
 		} else {
 			return String2Double(reg[reg.length - 2].trim(), SEP_MILES, SEP_DEC);
@@ -177,22 +178,6 @@ public class AppOcrRio extends BaseBancos {
 		}
 		return tesseract;
 	}
-	/*
-	 * @Override protected ITesseract getInstanceTesseract(File archivoOCR) { if
-	 * (tesseract == null) { tesseract = new Tesseract1(); // JNA Direct Mapping //
-	 * tesseract.setTessVariable("preserve_interword_spaces", "1");
-	 * 
-	 * // instanceFrances // path to tessdata directory // File tessDataFolder =
-	 * LoadLibs.extractNativeResources("tessdata"); //
-	 * instanceFrances.setDatapath(tessDataFolder.getAbsolutePath());
-	 * 
-	 * tesseract.setDatapath("c:\\temp\\tessdata");//
-	 * .setDatapath(archivoOCR.getParent() + File.separator + "temp\\tessdata"); //
-	 * // path to tessdata directory // File tessDataFolder =
-	 * LoadLibs.extractNativeResources("tessdata"); //
-	 * tesseract.setDatapath(tessDataFolder.getAbsolutePath()); } return tesseract;
-	 * }
-	 */
 
 	@Override
 	protected Double darSaldoSubTotalFromErrror(String registro) {

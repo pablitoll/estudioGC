@@ -45,9 +45,6 @@ public abstract class BaseBancos {
 		}
 		return tesseract;
 	}
-	
-	
-	
 
 	public String getOCR(File archivoOCR) throws Exception {
 		System.out.println("Procesando OCR: " + archivoOCR.getName());
@@ -57,10 +54,10 @@ public abstract class BaseBancos {
 	public String procesarArchivo(String strOcr, File archivo, Integer nroPagina) throws Exception {
 		System.out.println(String.format("Procesando %s: %s - Pagina %s ", banco.getNombre(), archivo.getName(), nroPagina));
 
-		if((ConstantesTool.DEBUG_HOJA > 0) && (ConstantesTool.DEBUG_HOJA != nroPagina)) {
+		if ((ConstantesTool.DEBUG_HOJA > 0) && (ConstantesTool.DEBUG_HOJA != nroPagina)) {
 			return "";
 		}
-		
+
 		String[] registros = getRegistrosFromOCR(strOcr, archivo, nroPagina);
 		if (registros != null) {
 			StringBuilder retorno = new StringBuilder();
@@ -134,6 +131,9 @@ public abstract class BaseBancos {
 	}
 
 	protected Double String2Double(String valor, String sepMiles, String sepDec) throws Exception {
+		if (valor.lastIndexOf(sepMiles) > valor.lastIndexOf(sepDec)) {
+			throw new Exception("Error formato valor");
+		}
 
 		if (valor.substring(valor.length() - 1).equals("-")) {
 			valor = "-" + valor.substring(0, valor.length() - 1);
