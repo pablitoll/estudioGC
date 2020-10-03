@@ -1,17 +1,26 @@
 package ar.com.tnba.utils.besumenesbancarios.business.bancos;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.imageio.ImageIO;
 
 import ar.com.rp.rpcutils.CommonUtils;
 import ar.com.tnba.utils.besumenesbancarios.business.bancos.BancosBusiness.Bancos;
+import ar.com.tnba.utils.besumenesbancarios.business.procesarImagen.Cortar;
+import ar.com.tnba.utils.besumenesbancarios.business.procesarImagen.SoloNegro;
 import net.sourceforge.tess4j.ITesseract;
 import net.sourceforge.tess4j.Tesseract1;
 
 public class AppOcrBBVA extends BaseBancos {
 
 	private static final String SOBRE_FOOTER = "Sobre (";
-	private static final String HEADER = "FECHA  ORIGEN";
+	private static final String HEADER = "FECHA[ ]*ORIGEN";
+	private Pattern pHEADER = Pattern.compile(HEADER);
 	private static final String TOTAL_MOVIMIENTOS = "TOTAL MOVIMIENTOS";
+	private static final String TRANSPORTE_SALDO = "TRANSPORTE SALDO";
 	private static final String SALDO_AL = "SALDO AL";
 	private static final String SALDO_ANTERIOR = "SALDO ANTERIOR";
 	private static final String SIN_MOVIMIENTOS = "S/MOVIMIENTOS";
@@ -21,27 +30,51 @@ public class AppOcrBBVA extends BaseBancos {
 		super(Bancos.FRANCES);
 	}
 
+	//2019 para atras sin esto, 2020 en adelante co esto 
+	@Override
+	public String getOCR(File archivoOCR) throws Exception {
+
+		System.out.println("Procesando OCR (Frances): " + archivoOCR.getName());
+		BufferedImage bi = Cortar.cortar(archivoOCR, 252, 2145);
+
+		try {
+			System.out.println();
+			String nombreCopia = archivoOCR.getAbsolutePath().substring(0, archivoOCR.getAbsolutePath().length() - 4) + ".imagenProcesada"
+					+ archivoOCR.getAbsolutePath().substring(archivoOCR.getAbsolutePath().length() - 4);
+			File fileImagenProcesda = new File(nombreCopia);
+			ImageIO.write(bi, "jpg", fileImagenProcesda);
+		} catch (Exception e) {
+			System.out.println(e);
+		}
+
+		return getInstanceTesseract(archivoOCR).doOCR(bi);
+	}
+
 	@Override
 	protected String[] getRegistrosFromOCR(String strOcr, File archivo, Integer nroPapagina) throws Exception {
 
-		Integer vecMax[] = new Integer[2];
+		Integer vecMin[] = new Integer[2];
 		if (strOcr.indexOf(SALDO_ANTERIOR) != -1) {
-			vecMax[0] = strOcr.indexOf(SALDO_ANTERIOR);
+			vecMin[0] = strOcr.indexOf(SALDO_ANTERIOR);
 		} else {
-			vecMax[0] = NUMERO_ALTO;
+			vecMin[0] = NUMERO_ALTO;
 		}
 
-		if (strOcr.indexOf(HEADER) != -1) {
-			vecMax[1] = strOcr.indexOf(HEADER);
+		
+		Matcher matcher = pHEADER.matcher(strOcr);
+		if (matcher.find()) {
+			vecMin[1] =  matcher.start();
 		} else {
-			vecMax[1] = NUMERO_ALTO;
+			vecMin[1] = NUMERO_ALTO;
 		}
-
-		Integer idxIni = CommonUtils.minimo(vecMax);
-
+		
+		Integer idxIni = CommonUtils.minimo(vecMin);
 		Integer idxFin = strOcr.indexOf(TOTAL_MOVIMIENTOS);
 		if (idxFin == -1) {
 			idxFin = strOcr.indexOf(SOBRE_FOOTER);
+		}
+		if (idxFin == -1) {
+			idxFin = strOcr.indexOf(TRANSPORTE_SALDO);
 		}
 
 		if (idxIni != NUMERO_ALTO) {
